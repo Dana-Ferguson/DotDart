@@ -39,7 +39,7 @@ namespace DotDart
     public readonly DartType type;
     public readonly Option<Expression> initializer;
 
-    public Field(DReader reader)
+    public Field(ComponentReader reader)
     {
       reader.CheckTag(Tag);
 
@@ -82,7 +82,7 @@ namespace DotDart
     public readonly FunctionNode function;
     public readonly List<Initializer> initializers;
 
-    public Constructor(DReader reader)
+    public Constructor(ComponentReader reader)
     {
       reader.CheckTag(Tag);
 
@@ -160,7 +160,7 @@ enum ProcedureKind {
     // Can only be absent if abstract, but tag is there anyway.
     public readonly Option<FunctionNode> function;
 
-    public Procedure(DReader reader)
+    public Procedure(ComponentReader reader)
     {
       var s = reader.Position;
       reader.CheckTag(Tag);
@@ -211,7 +211,7 @@ enum ProcedureKind {
     public readonly List<VariableDeclaration> positionalParameters;
     public readonly List<VariableDeclaration> namedParameters;
 
-    public RedirectingFactoryConstructor(DReader reader)
+    public RedirectingFactoryConstructor(ComponentReader reader)
     {
       reader.CheckTag(Tag);
 

@@ -4,7 +4,7 @@ namespace DotDart
 {
   public static class InitializerExtensions
   {
-    public static Initializer ReadInitializer(this DReader reader)
+    public static Initializer ReadInitializer(this ComponentReader reader)
     {
       var tag = reader.ReadByte();
       switch (tag)
@@ -30,7 +30,7 @@ namespace DotDart
     public const byte Tag = 7;
     public readonly byte isSynthetic;
 
-    public InvalidInitializer(DReader reader)
+    public InvalidInitializer(ComponentReader reader)
     {
       isSynthetic = reader.ReadByte();
     }
@@ -44,7 +44,7 @@ namespace DotDart
     public readonly FieldReference field;
     public readonly Expression value;
 
-    public FieldInitializer(DReader reader)
+    public FieldInitializer(ComponentReader reader)
     {
       isSynthetic = reader.ReadByte();
       field = new FieldReference(reader);
@@ -61,7 +61,7 @@ namespace DotDart
     public readonly ConstructorReference target;
     public readonly Arguments arguments;
 
-    public SuperInitializer(DReader reader)
+    public SuperInitializer(ComponentReader reader)
     {
       isSynthetic = reader.ReadByte();
       fileOffset = new FileOffset(reader);
@@ -79,7 +79,7 @@ namespace DotDart
     public readonly ConstructorReference target;
     public readonly Arguments arguments;
 
-    public RedirectingInitializer(DReader reader)
+    public RedirectingInitializer(ComponentReader reader)
     {
       isSynthetic = reader.ReadByte();
       fileOffset = new FileOffset(reader);
@@ -95,7 +95,7 @@ namespace DotDart
     public readonly byte isSynthetic;
     public readonly VariableDeclaration variable;
 
-    public LocalInitializer(DReader reader)
+    public LocalInitializer(ComponentReader reader)
     {
       isSynthetic = reader.ReadByte();
       variable = new VariableDeclaration(reader);
@@ -109,7 +109,7 @@ namespace DotDart
     public readonly byte isSynthetic;
     public readonly AssertStatement statement;
 
-    public AssertInitializer(DReader reader)
+    public AssertInitializer(ComponentReader reader)
     {
       // #V12 - This is in the Binary.MD but not in the actual code.
       isSynthetic = reader.ReadByte();

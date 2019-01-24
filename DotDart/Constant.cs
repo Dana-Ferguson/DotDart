@@ -5,7 +5,7 @@ namespace DotDart
 {
   public static class ConstantExtensions
   {
-    public static Constant ReadConstant(this DReader reader)
+    public static Constant ReadConstant(this ComponentReader reader)
     {
       var tag = reader.ReadByte();
       switch (tag)
@@ -47,7 +47,7 @@ namespace DotDart
     public const byte Tag = 1;
     public readonly byte value;
 
-    public BoolConstant(DReader reader)
+    public BoolConstant(ComponentReader reader)
     {
       value = reader.ReadByte();
     }
@@ -62,7 +62,7 @@ namespace DotDart
     // PositiveIntLiteral | NegativeIntLiteral | SpecializedIntLiteral | BigIntLiteral value;
     public readonly Expression value;
 
-    public IntConstant(DReader reader)
+    public IntConstant(ComponentReader reader)
     {
       value = reader.ReadExpression();
 
@@ -94,7 +94,7 @@ namespace DotDart
     public const byte Tag = 3;
     public readonly double value;
 
-    public DoubleConstant(DReader reader)
+    public DoubleConstant(ComponentReader reader)
     {
       value = reader.ReadDouble();
     }
@@ -106,7 +106,7 @@ namespace DotDart
     public const byte Tag = 4;
     public readonly StringReference value;
 
-    public StringConstant(DReader reader)
+    public StringConstant(ComponentReader reader)
     {
       value = new StringReference(reader);
     }
@@ -119,7 +119,7 @@ namespace DotDart
     public readonly LibraryReference library; // May be NullReference.
     public readonly StringReference name;
 
-    public SymbolConstant(DReader reader)
+    public SymbolConstant(ComponentReader reader)
     {
       library = new LibraryReference(reader);
       name = new StringReference(reader);
@@ -142,7 +142,7 @@ namespace DotDart
     public readonly DartType valueType;
     public readonly List<(ConstantReference, ConstantReference)> keyValueList;
 
-    public MapConstant(DReader reader)
+    public MapConstant(ComponentReader reader)
     {
       keyType = reader.ReadDartType();
       valueType = reader.ReadDartType();
@@ -157,7 +157,7 @@ namespace DotDart
     public readonly DartType type;
     public readonly List<ConstantReference> values;
 
-    public ListConstant(DReader reader)
+    public ListConstant(ComponentReader reader)
     {
       type = reader.ReadDartType();
       values = reader.ReadList(r => new ConstantReference(r));
@@ -172,7 +172,7 @@ namespace DotDart
     public readonly List<DartType> typeArguments;
     public readonly List<(FieldReference, ConstantReference)> values;
 
-    public InstanceConstant(DReader reader)
+    public InstanceConstant(ComponentReader reader)
     {
       classNameReference = new CanonicalNameReference(reader);
       typeArguments = reader.ReadList(r => r.ReadDartType());
@@ -187,7 +187,7 @@ namespace DotDart
     public readonly CanonicalNameReference tearOffConstant;
     public readonly List<DartType> typeArguments;
 
-    public PartialInstantiationConstant(DReader reader)
+    public PartialInstantiationConstant(ComponentReader reader)
     {
       tearOffConstant = new CanonicalNameReference(reader);
       typeArguments = reader.ReadList(r => r.ReadDartType());
@@ -200,7 +200,7 @@ namespace DotDart
     public const byte Tag = 10;
     public readonly CanonicalNameReference staticProcedureReference;
 
-    public TearOffConstant(DReader reader)
+    public TearOffConstant(ComponentReader reader)
     {
       staticProcedureReference = new CanonicalNameReference(reader);
     }
@@ -212,7 +212,7 @@ namespace DotDart
     public const byte Tag = 11;
     public readonly DartType type;
 
-    public TypeLiteralConstant(DReader reader)
+    public TypeLiteralConstant(ComponentReader reader)
     {
       type = reader.ReadDartType();
     }
@@ -226,7 +226,7 @@ namespace DotDart
     public readonly StringReference name;
     public readonly CanonicalNameReference defaultValue;
 
-    public EnvironmentBoolConstant(DReader reader)
+    public EnvironmentBoolConstant(ComponentReader reader)
     {
       name = new StringReference(reader);
       defaultValue = new CanonicalNameReference(reader);
@@ -242,7 +242,7 @@ namespace DotDart
     public readonly StringReference name;
     public readonly CanonicalNameReference defaultValue;
 
-    public EnvironmentIntConstant(DReader reader)
+    public EnvironmentIntConstant(ComponentReader reader)
     {
       name = new StringReference(reader);
       defaultValue = new CanonicalNameReference(reader);
@@ -258,7 +258,7 @@ namespace DotDart
     public readonly StringReference name;
     public readonly CanonicalNameReference defaultValue;
 
-    public EnvironmentStringConstant(DReader reader)
+    public EnvironmentStringConstant(ComponentReader reader)
     {
       name = new StringReference(reader);
       defaultValue = new CanonicalNameReference(reader);
@@ -279,7 +279,7 @@ namespace DotDart
 
     public readonly Expression expression;
 
-    public UnevaluatedConstant(DReader reader)
+    public UnevaluatedConstant(ComponentReader reader)
     {
       expression = reader.ReadExpression();
     }

@@ -10,7 +10,7 @@ namespace DotDart
     const int SpecializedPayloadMask = 0x7; // 00000111
 
     // https://github.com/dart-lang/sdk/blob/master/pkg/kernel/lib/binary/ast_from_binary.dart#L1377
-    public static Expression ReadExpression(this DReader reader)
+    public static Expression ReadExpression(this ComponentReader reader)
     {
       var _tag = reader.ReadByte();
       var tag = ((_tag & SpecializedTagHighBit) == 0)
@@ -129,7 +129,7 @@ namespace DotDart
     public const byte Tag = 55;
     public readonly uint value;
 
-    public PositiveIntLiteral(DReader reader)
+    public PositiveIntLiteral(ComponentReader reader)
     {
       value = reader.ReadUint();
     }
@@ -143,7 +143,7 @@ namespace DotDart
 
     public int value => -(int) absoluteValue;
 
-    public NegativeIntLiteral(DReader reader)
+    public NegativeIntLiteral(ComponentReader reader)
     {
       absoluteValue = reader.ReadUint();
     }
@@ -155,7 +155,7 @@ namespace DotDart
     public const byte Tag = 57;
     public readonly StringReference valueString;
 
-    public BigIntLiteral(DReader reader)
+    public BigIntLiteral(ComponentReader reader)
     {
       valueString = new StringReference(reader);
     }
@@ -170,7 +170,7 @@ namespace DotDart
     public readonly MemberReference target;
     public readonly Expression value;
 
-    public DirectPropertySet(DReader reader)
+    public DirectPropertySet(ComponentReader reader)
     {
       fileOffset = new FileOffset(reader);
       receiver = reader.ReadExpression();
@@ -188,7 +188,7 @@ namespace DotDart
     public readonly MemberReference target;
     public readonly Arguments arguments;
 
-    public DirectMethodInvocation(DReader reader)
+    public DirectMethodInvocation(ComponentReader reader)
     {
       fileOffset = new FileOffset(reader);
       receiver = reader.ReadExpression();
@@ -204,7 +204,7 @@ namespace DotDart
     public readonly FileOffset fileOffset;
     public readonly StringReference message;
 
-    public InvalidExpression(DReader reader)
+    public InvalidExpression(ComponentReader reader)
     {
       fileOffset = new FileOffset(reader);
       message = new StringReference(reader);
@@ -223,7 +223,7 @@ namespace DotDart
     public readonly VariableReference variable;
     public readonly Option<DartType> promotedType;
 
-    public VariableGet(DReader reader)
+    public VariableGet(ComponentReader reader)
     {
       fileOffset = new FileOffset(reader);
       variableDeclarationPosition = reader.ReadUint();
@@ -244,7 +244,7 @@ namespace DotDart
     // Byte offset in the binary for the variable declaration (without tag).
     public readonly uint variableDeclarationPosition;
 
-    public SpecializedVariableGet(byte tag, DReader reader)
+    public SpecializedVariableGet(byte tag, ComponentReader reader)
     {
       N = tag - 128;
       fileOffset = new FileOffset(reader);
@@ -264,7 +264,7 @@ namespace DotDart
     public readonly VariableReference variable;
     public readonly Expression value;
 
-    public VariableSet(DReader reader)
+    public VariableSet(ComponentReader reader)
     {
       fileOffset = new FileOffset(reader);
       variableDeclarationPosition = reader.ReadUint();
@@ -287,7 +287,7 @@ namespace DotDart
     public readonly Expression value;
     // Equivalent to VariableSet with index N.
 
-    public SpecializedVariableSet(byte tag, DReader reader)
+    public SpecializedVariableSet(byte tag, ComponentReader reader)
     {
       N = tag - 136;
       fileOffset = new FileOffset(reader);
@@ -305,7 +305,7 @@ namespace DotDart
     public readonly Name name;
     public readonly MemberReference interfaceTarget; // May be NullReference.
 
-    public PropertyGet(DReader reader)
+    public PropertyGet(ComponentReader reader)
     {
       fileOffset = new FileOffset(reader);
       receiver = reader.ReadExpression();
@@ -324,7 +324,7 @@ namespace DotDart
     public readonly Expression value;
     public readonly MemberReference interfaceTarget; // May be NullReference.
 
-    public PropertySet(DReader reader)
+    public PropertySet(ComponentReader reader)
     {
       fileOffset = new FileOffset(reader);
       receiver = reader.ReadExpression();
@@ -342,7 +342,7 @@ namespace DotDart
     public readonly Name name;
     public readonly MemberReference interfaceTarget; // May be NullReference.
 
-    public SuperPropertyGet(DReader reader)
+    public SuperPropertyGet(ComponentReader reader)
     {
       fileOffset = new FileOffset(reader);
       name = new Name(reader);
@@ -359,7 +359,7 @@ namespace DotDart
     public readonly Expression value;
     public readonly MemberReference interfaceTarget; // May be NullReference.
 
-    public SuperPropertySet(DReader reader)
+    public SuperPropertySet(ComponentReader reader)
     {
       fileOffset = new FileOffset(reader);
       name = new Name(reader);
@@ -376,7 +376,7 @@ namespace DotDart
     public readonly Expression receiver;
     public readonly MemberReference target;
 
-    public DirectPropertyGet(DReader reader)
+    public DirectPropertyGet(ComponentReader reader)
     {
       fileOffset = new FileOffset(reader);
       receiver = reader.ReadExpression();
@@ -391,7 +391,7 @@ namespace DotDart
     public readonly FileOffset fileOffset;
     public readonly MemberReference target;
 
-    public StaticGet(DReader reader)
+    public StaticGet(ComponentReader reader)
     {
       fileOffset = new FileOffset(reader);
       target = new MemberReference(reader);
@@ -406,7 +406,7 @@ namespace DotDart
     public readonly MemberReference target;
     public readonly Expression value;
 
-    public StaticSet(DReader reader)
+    public StaticSet(ComponentReader reader)
     {
       fileOffset = new FileOffset(reader);
       target = new MemberReference(reader);
@@ -424,7 +424,7 @@ namespace DotDart
     public readonly Arguments arguments;
     public readonly MemberReference interfaceTarget; // May be NullReference.
 
-    public MethodInvocation(DReader reader)
+    public MethodInvocation(ComponentReader reader)
     {
       fileOffset = new FileOffset(reader);
       receiver = reader.ReadExpression();
@@ -443,7 +443,7 @@ namespace DotDart
     public readonly Arguments arguments;
     public readonly MemberReference interfaceTarget; // May be NullReference.
 
-    public SuperMethodInvocation(DReader reader)
+    public SuperMethodInvocation(ComponentReader reader)
     {
       fileOffset = new FileOffset(reader);
       name = new Name(reader);
@@ -460,7 +460,7 @@ namespace DotDart
     public readonly MemberReference target;
     public readonly Arguments arguments;
 
-    public StaticInvocation(DReader reader)
+    public StaticInvocation(ComponentReader reader)
     {
       fileOffset = new FileOffset(reader);
       target = new MemberReference(reader);
@@ -477,7 +477,7 @@ namespace DotDart
     public readonly MemberReference target;
     public readonly Arguments arguments;
 
-    public ConstStaticInvocation(DReader reader)
+    public ConstStaticInvocation(ComponentReader reader)
     {
       fileOffset = new FileOffset(reader);
       target = new MemberReference(reader);
@@ -493,7 +493,7 @@ namespace DotDart
     public readonly ConstructorReference target;
     public readonly Arguments arguments;
 
-    public ConstructorInvocation(DReader reader)
+    public ConstructorInvocation(ComponentReader reader)
     {
       fileOffset = new FileOffset(reader);
       target = new ConstructorReference(reader);
@@ -511,7 +511,7 @@ namespace DotDart
 
     // https://github.com/dart-lang/sdk/blob/master/pkg/kernel/lib/binary/ast_from_binary.dart#L1487
     // will parse the same ~ but the binary.md and implementations disagree on semantics here
-    public ConstConstructorInvocation(DReader reader)
+    public ConstConstructorInvocation(ComponentReader reader)
     {
       fileOffset = new FileOffset(reader);
       target = new ConstructorReference(reader);
@@ -525,7 +525,7 @@ namespace DotDart
     public const byte Tag = 33;
     public readonly Expression operand;
 
-    public Not(DReader reader)
+    public Not(ComponentReader reader)
     {
       operand = reader.ReadExpression();
     }
@@ -543,7 +543,7 @@ namespace DotDart
     public readonly byte logicalOperator; // Index into LogicalOperator enum above
     public readonly Expression right;
 
-    public LogicalExpression(DReader reader)
+    public LogicalExpression(ComponentReader reader)
     {
       left = reader.ReadExpression();
       logicalOperator = reader.ReadByte();
@@ -560,7 +560,7 @@ namespace DotDart
     public readonly Expression otherwise;
     public readonly Option<DartType> staticType;
 
-    public ConditionalExpression(DReader reader)
+    public ConditionalExpression(ComponentReader reader)
     {
       condition = reader.ReadExpression();
       then = reader.ReadExpression();
@@ -576,7 +576,7 @@ namespace DotDart
     public readonly FileOffset fileOffset;
     public readonly List<Expression> expressions;
 
-    public StringConcatenation(DReader reader)
+    public StringConcatenation(ComponentReader reader)
     {
       fileOffset = new FileOffset(reader);
       expressions = reader.ReadList(r => r.ReadExpression());
@@ -591,7 +591,7 @@ namespace DotDart
     public readonly Expression operand;
     public readonly DartType type;
 
-    public IsExpression(DReader reader)
+    public IsExpression(ComponentReader reader)
     {
       fileOffset = new FileOffset(reader);
       operand = reader.ReadExpression();
@@ -616,7 +616,7 @@ namespace DotDart
     public readonly Expression operand;
     public readonly DartType type;
 
-    public AsExpression(DReader reader)
+    public AsExpression(ComponentReader reader)
     {
       fileOffset = new FileOffset(reader);
       flags = (Flag) reader.ReadByte();
@@ -631,7 +631,7 @@ namespace DotDart
     public const byte Tag = 39;
     public readonly StringReference value;
 
-    public StringLiteral(DReader reader)
+    public StringLiteral(ComponentReader reader)
     {
       value = new StringReference(reader);
     }
@@ -643,7 +643,7 @@ namespace DotDart
     public const byte Tag = 40;
     double value;
 
-    public DoubleLiteral(DReader reader)
+    public DoubleLiteral(ComponentReader reader)
     {
       value = reader.ReadDouble();
     }
@@ -673,7 +673,7 @@ namespace DotDart
     public const byte Tag = 44;
     public readonly StringReference value; // Everything strictly after the '#'.
 
-    public SymbolLiteral(DReader reader)
+    public SymbolLiteral(ComponentReader reader)
     {
       value = new StringReference(reader);
     }
@@ -685,7 +685,7 @@ namespace DotDart
     public const byte Tag = 45;
     public readonly DartType type;
 
-    public TypeLiteral(DReader reader)
+    public TypeLiteral(ComponentReader reader)
     {
       type = reader.ReadDartType();
     }
@@ -703,7 +703,7 @@ namespace DotDart
     public const byte Tag = 47;
     public readonly FileOffset fileOffset;
 
-    public Rethrow(DReader reader)
+    public Rethrow(ComponentReader reader)
     {
       fileOffset = new FileOffset(reader);
     }
@@ -716,7 +716,7 @@ namespace DotDart
     public readonly FileOffset fileOffset;
     public readonly Expression value;
 
-    public Throw(DReader reader)
+    public Throw(ComponentReader reader)
     {
       fileOffset = new FileOffset(reader);
       value = reader.ReadExpression();
@@ -731,7 +731,7 @@ namespace DotDart
     public readonly DartType typeArgument;
     public readonly List<Expression> values;
 
-    public ListLiteral(DReader reader)
+    public ListLiteral(ComponentReader reader)
     {
       fileOffset = new FileOffset(reader);
       typeArgument = reader.ReadDartType();
@@ -747,7 +747,7 @@ namespace DotDart
     public readonly DartType typeArgument;
     public readonly List<Expression> values;
 
-    public ConstListLiteral(DReader reader)
+    public ConstListLiteral(ComponentReader reader)
     {
       fileOffset = new FileOffset(reader);
       typeArgument = reader.ReadDartType();
@@ -763,7 +763,7 @@ namespace DotDart
     public readonly DartType typeArgument;
     public readonly List<Expression> values;
 
-    public SetLiteral(DReader reader)
+    public SetLiteral(ComponentReader reader)
     {
       fileOffset = new FileOffset(reader);
       typeArgument = reader.ReadDartType();
@@ -779,7 +779,7 @@ namespace DotDart
     public readonly DartType typeArgument;
     public readonly List<Expression> values;
 
-    public ConstSetLiteral(DReader reader)
+    public ConstSetLiteral(ComponentReader reader)
     {
       fileOffset = new FileOffset(reader);
       typeArgument = reader.ReadDartType();
@@ -796,7 +796,7 @@ namespace DotDart
     public readonly DartType valueType;
     public readonly List<MapEntry> entries;
 
-    public MapLiteral(DReader reader)
+    public MapLiteral(ComponentReader reader)
     {
       fileOffset = new FileOffset(reader);
       keyType = reader.ReadDartType();
@@ -814,7 +814,7 @@ namespace DotDart
     public readonly DartType valueType;
     public readonly List<MapEntry> entries;
 
-    public ConstMapLiteral(DReader reader)
+    public ConstMapLiteral(ComponentReader reader)
     {
       fileOffset = new FileOffset(reader);
       keyType = reader.ReadDartType();
@@ -829,7 +829,7 @@ namespace DotDart
     public const byte Tag = 51;
     public readonly Expression operand;
 
-    public AwaitExpression(DReader reader)
+    public AwaitExpression(ComponentReader reader)
     {
       operand = reader.ReadExpression();
     }
@@ -842,7 +842,7 @@ namespace DotDart
     public readonly FileOffset fileOffset;
     public readonly FunctionNode function;
 
-    public FunctionExpression(DReader reader)
+    public FunctionExpression(ComponentReader reader)
     {
       fileOffset = new FileOffset(reader);
       function = new FunctionNode(reader);
@@ -856,7 +856,7 @@ namespace DotDart
     public readonly VariableDeclaration variable;
     public readonly Expression body;
 
-    public Let(DReader reader)
+    public Let(ComponentReader reader)
     {
       variable = new VariableDeclaration(reader);
       body = reader.ReadExpression();
@@ -870,7 +870,7 @@ namespace DotDart
     public readonly Expression expression;
     public readonly List<DartType> typeArguments;
 
-    public Instantiation(DReader reader)
+    public Instantiation(ComponentReader reader)
     {
       expression = reader.ReadExpression();
       typeArguments = reader.ReadList(r => r.ReadDartType());
@@ -883,7 +883,7 @@ namespace DotDart
     public const byte Tag = 14;
     public readonly LibraryDependencyReference deferredImport;
 
-    public LoadLibrary(DReader reader)
+    public LoadLibrary(ComponentReader reader)
     {
       deferredImport = new LibraryDependencyReference(reader);
     }
@@ -895,7 +895,7 @@ namespace DotDart
     public const byte Tag = 13;
     public readonly LibraryDependencyReference deferredImport;
 
-    public CheckLibraryIsLoaded(DReader reader)
+    public CheckLibraryIsLoaded(ComponentReader reader)
     {
       deferredImport = new LibraryDependencyReference(reader);
     }
@@ -907,7 +907,7 @@ namespace DotDart
     public const byte Tag = 107;
     public readonly CanonicalNameReference constantReference;
 
-    public ConstantExpression(DReader reader)
+    public ConstantExpression(ComponentReader reader)
     {
       constantReference = new CanonicalNameReference(reader);
     }

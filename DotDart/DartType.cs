@@ -10,7 +10,7 @@ namespace DotDart
     // Is this just because of changes in binary.md?
     // TypedefType (we have, but not a type)
     // BottomType (not in binary.md)
-    public static DartType ReadDartType(this DReader reader)
+    public static DartType ReadDartType(this ComponentReader reader)
     {
       var tag = reader.ReadByte();
       switch (tag)
@@ -57,7 +57,7 @@ namespace DotDart
     public readonly ClassReference classReference;
     public readonly List<DartType> typeArguments;
 
-    public InterfaceType(DReader reader)
+    public InterfaceType(ComponentReader reader)
     {
       classReference = new ClassReference(reader);
       typeArguments = reader.ReadList(r => r.ReadDartType());
@@ -72,7 +72,7 @@ namespace DotDart
     public readonly ClassReference classReference;
     // Equivalent to InterfaceType with empty list of type arguments.
 
-    public SimpleInterfaceType(DReader reader)
+    public SimpleInterfaceType(ComponentReader reader)
     {
       classReference = new ClassReference(reader);
     }
@@ -96,7 +96,7 @@ namespace DotDart
     // public readonly Option<TypedefType> typedef;
     public readonly DartType returnType;
 
-    public FunctionType(DReader reader)
+    public FunctionType(ComponentReader reader)
     {
       typeParameters = reader.ReadList(r => new TypeParameter(r));
       requiredParameterCount = reader.ReadUint();
@@ -126,7 +126,7 @@ namespace DotDart
     // Equivalent to a FunctionType with no type parameters or named parameters,
     // and where all positional parameters are required.
 
-    public SimpleFunctionType(DReader reader)
+    public SimpleFunctionType(ComponentReader reader)
     {
       positionalParameters = reader.ReadList(r => r.ReadDartType());
 
@@ -143,7 +143,7 @@ namespace DotDart
     public readonly StringReference name;
     public readonly DartType type;
 
-    public NamedDartType(DReader reader)
+    public NamedDartType(ComponentReader reader)
     {
       name = new StringReference(reader);
       type = reader.ReadDartType();
@@ -175,7 +175,7 @@ namespace DotDart
     public readonly uint index;
     public readonly Option<DartType> bound;
 
-    public TypeParameterType(DReader reader)
+    public TypeParameterType(ComponentReader reader)
     {
       index = reader.ReadUint();
       bound = reader.ReadOption(r => r.ReadDartType());

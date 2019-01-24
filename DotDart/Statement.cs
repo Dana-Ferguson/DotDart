@@ -6,7 +6,7 @@ namespace DotDart
 
   public static class StatementExtensions
   {
-    public static Statement ReadStatement(this DReader reader)
+    public static Statement ReadStatement(this ComponentReader reader)
     {
       var tag = reader.ReadByte();
       switch (tag)
@@ -47,7 +47,7 @@ namespace DotDart
     public const byte Tag = 61;
     public readonly Expression expression;
 
-    public ExpressionStatement(DReader reader)
+    public ExpressionStatement(ComponentReader reader)
     {
       expression = reader.ReadExpression();
     }
@@ -59,7 +59,7 @@ namespace DotDart
     public const byte Tag = 62;
     public readonly List<Statement> statements;
 
-    public Block(DReader reader)
+    public Block(ComponentReader reader)
     {
       statements = reader.ReadList(r => r.ReadStatement());
     }
@@ -71,7 +71,7 @@ namespace DotDart
     public const byte Tag = 81;
     public readonly List<Statement> statements;
 
-    public AssertBlock(DReader reader)
+    public AssertBlock(ComponentReader reader)
     {
       statements = reader.ReadList(r => r.ReadStatement());
     }
@@ -92,7 +92,7 @@ namespace DotDart
     public readonly FileOffset conditionEndOffset;
     public readonly Option<Expression> message;
 
-    public AssertStatement(DReader reader)
+    public AssertStatement(ComponentReader reader)
     {
       condition = reader.ReadExpression();
       conditionStartOffset = new FileOffset(reader);
@@ -107,7 +107,7 @@ namespace DotDart
     public const byte Tag = 65;
     public readonly Statement body;
 
-    public LabeledStatement(DReader reader)
+    public LabeledStatement(ComponentReader reader)
     {
       body = reader.ReadStatement();
     }
@@ -125,7 +125,7 @@ namespace DotDart
     // Labels are not in scope across function boundaries.
     public readonly uint labelIndex;
 
-    public BreakStatement(DReader reader)
+    public BreakStatement(ComponentReader reader)
     {
       fileOffset = new FileOffset(reader);
       labelIndex = reader.ReadUint();
@@ -140,7 +140,7 @@ namespace DotDart
     public readonly Expression condition;
     public readonly Statement body;
 
-    public WhileStatement(DReader reader)
+    public WhileStatement(ComponentReader reader)
     {
       fileOffset = new FileOffset(reader);
       condition = reader.ReadExpression();
@@ -156,7 +156,7 @@ namespace DotDart
     public readonly Statement body;
     public readonly Expression condition;
 
-    public DoStatement(DReader reader)
+    public DoStatement(ComponentReader reader)
     {
       fileOffset = new FileOffset(reader);
       body = reader.ReadStatement();
@@ -174,7 +174,7 @@ namespace DotDart
     public readonly List<Expression> updates;
     public readonly Statement body;
 
-    public ForStatement(DReader reader)
+    public ForStatement(ComponentReader reader)
     {
       fileOffset = new FileOffset(reader);
       variables = reader.ReadList(r => new VariableDeclaration(r));
@@ -194,7 +194,7 @@ namespace DotDart
     public readonly Expression iterable;
     public readonly Statement body;
 
-    public ForInStatement(DReader reader)
+    public ForInStatement(ComponentReader reader)
     {
       fileOffset = new FileOffset(reader);
       bodyOffset = new FileOffset(reader);
@@ -214,7 +214,7 @@ namespace DotDart
     public readonly Expression iterable;
     public readonly Statement body;
 
-    public AsyncForInStatement(DReader reader)
+    public AsyncForInStatement(ComponentReader reader)
     {
       fileOffset = new FileOffset(reader);
       bodyOffset = new FileOffset(reader);
@@ -232,7 +232,7 @@ namespace DotDart
     public readonly Expression expression;
     public readonly List<SwitchCase> cases;
 
-    public SwitchStatement(DReader reader)
+    public SwitchStatement(ComponentReader reader)
     {
       fileOffset = new FileOffset(reader);
       expression = reader.ReadExpression();
@@ -247,7 +247,7 @@ namespace DotDart
     public readonly byte isDefault; // 1 if default, 0 is not default.
     public readonly Statement body;
 
-    public SwitchCase(DReader reader)
+    public SwitchCase(ComponentReader reader)
     {
       expressions = reader.ReadList(r => new Pair<FileOffset, Expression>(new FileOffset(r), r.ReadExpression()));
       isDefault = reader.ReadByte();
@@ -272,7 +272,7 @@ namespace DotDart
     // same FunctionNode.
     public readonly uint caseIndex;
 
-    public ContinueSwitchStatement(DReader reader)
+    public ContinueSwitchStatement(ComponentReader reader)
     {
       fileOffset = new FileOffset(reader);
       caseIndex = reader.ReadUint();
@@ -288,7 +288,7 @@ namespace DotDart
     public readonly Statement then;
     public readonly Statement otherwise; // Empty statement if there was no else part.
 
-    public IfStatement(DReader reader)
+    public IfStatement(ComponentReader reader)
     {
       fileOffset = new FileOffset(reader);
       condition = reader.ReadExpression();
@@ -304,7 +304,7 @@ namespace DotDart
     public readonly FileOffset fileOffset;
     public readonly Option<Expression> expression;
 
-    public ReturnStatement(DReader reader)
+    public ReturnStatement(ComponentReader reader)
     {
       fileOffset = new FileOffset(reader);
       expression = reader.ReadOption(r => r.ReadExpression());
@@ -329,7 +329,7 @@ namespace DotDart
 
     public readonly List<Catch> catches;
 
-    public TryCatch(DReader reader)
+    public TryCatch(ComponentReader reader)
     {
       body = reader.ReadStatement();
       flags = (Flag) reader.ReadByte();
@@ -345,7 +345,7 @@ namespace DotDart
     public readonly Option<VariableDeclaration> stackTrace;
     public readonly Statement body;
 
-    public Catch(DReader reader)
+    public Catch(ComponentReader reader)
     {
       fileOffset = new FileOffset(reader);
       guard = reader.ReadDartType();
@@ -362,7 +362,7 @@ namespace DotDart
     public readonly Statement body;
     public readonly Statement finalizer;
 
-    public TryFinally(DReader reader)
+    public TryFinally(ComponentReader reader)
     {
       body = reader.ReadStatement();
       finalizer = reader.ReadStatement();
@@ -385,7 +385,7 @@ namespace DotDart
 
     public readonly Expression expression;
 
-    public YieldStatement(DReader reader)
+    public YieldStatement(ComponentReader reader)
     {
       fileOffset = new FileOffset(reader);
       flags = (Flag) reader.ReadByte();
@@ -399,7 +399,7 @@ namespace DotDart
     public const byte Tag = 78;
     public readonly VariableDeclaration variable;
 
-    public VariableDeclarationStatement(DReader reader)
+    public VariableDeclarationStatement(ComponentReader reader)
     {
       variable = new VariableDeclaration(reader);
     }
@@ -419,7 +419,7 @@ namespace DotDart
     public readonly VariableDeclaration variable;
     public readonly FunctionNode function;
 
-    public FunctionDeclaration(DReader reader)
+    public FunctionDeclaration(ComponentReader reader)
     {
       fileOffset = new FileOffset(reader);
       variable = new VariableDeclaration(reader);
