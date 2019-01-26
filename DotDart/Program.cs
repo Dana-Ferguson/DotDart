@@ -18,7 +18,7 @@ namespace DotDart
   {
     static void Main(string[] args)
     {
-      Console.WriteLine("Hello World!");
+      Console.WriteLine("DotDart says hi!");
 
       // CompileDill();
       Test01();
@@ -32,19 +32,9 @@ namespace DotDart
       var bytes = System.IO.File.ReadAllBytes(filename);
       Console.WriteLine(bytes.Length);
 
-      /*foreach (var b in bytes.Take(16))
-      {
-          Console.WriteLine(b.ToString("X2"));
-      }*/
+      // foreach (var b in bytes.Take(16)) Console.WriteLine(b.ToString("X2"));
 
-      var reader = new ComponentReader(bytes);
-      // todo: handle this better
-      // if we want to try and increase efficiency, we'd want a MMF
-      // there is a lot of random (or reversed) access to DILL files (weird design decision?)
-      // best just to load all bytes and conquer
-      uint libraryCount = ComponentReader.ToUint32(bytes.AsSpan(bytes.Length-8, 4));
-      uint componentFileSizeInBytes = ComponentReader.ToUint32(bytes.AsSpan(bytes.Length-4, 4));;
-      var componentFile = new ComponentFile(reader, libraryCount, componentFileSizeInBytes);
+      var componentFile = ComponentFile.Load(filename);
       int x = 3;
     }
 

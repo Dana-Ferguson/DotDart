@@ -290,7 +290,13 @@ namespace DotDart
     public readonly List<Constant> constants;
     public readonly ComponentIndex componentIndex;
 
-    public ComponentFile(ComponentReader reader, uint libraryCount, uint componentFileSizeInBytes)
+    public static ComponentFile Load(string filename)
+    {
+      var bytes = System.IO.File.ReadAllBytes(filename);
+      return new ComponentFile(new ComponentReader(bytes));
+    }
+
+    public ComponentFile(ComponentReader reader)
     {
       var magic = reader.ReadUint32();
       if (magic != Magic) throw new Exception($"{nameof(ComponentFile)} Magic should be {Magic} but was {magic}.");
@@ -316,6 +322,10 @@ namespace DotDart
       {
         Console.WriteLine($"Unknown ComponentFile formatVersion {formatVersion}");
       }
+
+      var backData = reader.GetWindow(reader.Length - 8);
+      uint libraryCount = backData.ReadUint32();
+      uint componentFileSizeInBytes = backData.ReadUint32();
 
       var componentIndexOffset = componentFileSizeInBytes - (libraryCount + 10) * sizeof(uint);
       var componentIndexReader = reader.GetWindow(componentIndexOffset);
