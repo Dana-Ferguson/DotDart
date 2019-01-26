@@ -121,72 +121,6 @@ namespace DotDart
     }
   }
 
-  /*
-  class CanonicalNameReference {
-    UInt biasedIndex; // 0 if null, otherwise N+1 where N is index of parent
-  }
-  */
-  public class CanonicalNameReference
-  {
-    public readonly uint biasedIndex;
-
-    public CanonicalNameReference(ComponentReader reader)
-    {
-      biasedIndex = reader.ReadUint();
-      // todo: remove ~ this is for checking
-      Console.WriteLine($"* '{reader.GetString(this)}'");
-    }
-  }
-
-  /*
-  class UriReference {
-    UInt index; // Index into the UriSource uris.
-  }
-  */
-  public class UriReference
-  {
-    public readonly uint index;
-
-    public UriReference(ComponentReader reader)
-    {
-      index = reader.ReadUint();
-    }
-  }
-
-  /*
-  class StringReference {
-    UInt index; // Index into the Component's strings.
-  }
-  */
-  public class StringReference
-  {
-    public readonly uint index;
-
-    public StringReference(ComponentReader reader)
-    {
-      index = reader.ReadUint();
-    }
-  }
-
-  /*
-  class StringTable {
-    List<UInt> endOffsets;
-    Byte[endOffsets.last] utf8Bytes;
-  }
-  */
-  public class StringTable
-  {
-    public readonly List<int> endOffsets;
-    public readonly byte[] utf8Bytes;
-
-    public StringTable(ComponentReader reader)
-    {
-      // todo: optimize!
-      endOffsets = reader.ReadList((r) => (int)r.ReadUint());
-      utf8Bytes = reader.ReadBytes(endOffsets.LastOrDefault());
-      reader.StringTable = this;
-    }
-  }
 
   /*
   abstract class Node { byte tag; }
@@ -198,9 +132,6 @@ namespace DotDart
   {
     byte tag { get; }
   }
-
-
-
 
   public class ConstantReference
   {
@@ -305,120 +236,6 @@ type UriSource {
     public Something(ComponentReader reader, Func<ComponentReader, T> valueReader)
     {
       value = valueReader(reader);
-    }
-  }
-
-  public class CanonicalName
-  {
-    public readonly CanonicalNameReference parent;
-    public readonly StringReference name;
-
-    public CanonicalName(ComponentReader reader)
-    {
-      parent = new CanonicalNameReference(reader);
-      name = new StringReference(reader);
-    }
-  }
-
-  public class LibraryReference
-  {
-    // Must be populated by a library (possibly later in the file).
-    public readonly CanonicalNameReference canonicalName;
-
-    public LibraryReference(ComponentReader reader)
-    {
-      canonicalName = new CanonicalNameReference(reader);
-    }
-  }
-
-  public class ClassReference
-  {
-    // Must be populated by a class (possibly later in the file).
-    public readonly CanonicalNameReference canonicalName;
-
-    public ClassReference(ComponentReader reader)
-    {
-      canonicalName = new CanonicalNameReference(reader);
-    }
-  }
-
-  public class MemberReference
-  {
-    // Must be populated by a member (possibly later in the file).
-    public readonly CanonicalNameReference canonicalName;
-
-    // todo, annotate with allowNull
-    public MemberReference(ComponentReader reader)
-    {
-      canonicalName = new CanonicalNameReference(reader);
-    }
-  }
-
-  public class FieldReference
-  {
-    // Must be populated by a field (possibly later in the file).
-    public readonly CanonicalNameReference canonicalName;
-
-    public FieldReference(ComponentReader reader)
-    {
-      canonicalName = new CanonicalNameReference(reader);
-    }
-  }
-
-  public class ConstructorReference
-  {
-    // Must be populated by a constructor (possibly later in the file).
-    public readonly CanonicalNameReference canonicalName;
-
-    public ConstructorReference(ComponentReader reader)
-    {
-      canonicalName = new CanonicalNameReference(reader);
-    }
-
-  }
-
-  public class ProcedureReference
-  {
-    // Must be populated by a procedure (possibly later in the file).
-    public readonly CanonicalNameReference canonicalName;
-
-    public ProcedureReference(ComponentReader reader)
-    {
-      canonicalName = new CanonicalNameReference(reader);
-    }
-  }
-
-  public class TypedefReference
-  {
-    // Must be populated by a typedef (possibly later in the file).
-    public readonly CanonicalNameReference canonicalName;
-
-    public TypedefReference(ComponentReader reader)
-    {
-      canonicalName = new CanonicalNameReference(reader);
-    }
-  }
-
-/*
-type Name {
-  StringReference name;
-  if name begins with '_' {
-    LibraryReference library;
-  }
-}
-*/
-  public class Name
-  {
-    public readonly StringReference name;
-
-    // if name begins with '_'
-    public readonly LibraryReference library;
-
-    public Name(ComponentReader reader)
-    {
-      name = new StringReference(reader);
-      // library = name.GetString().StartsWith('_') ? new LibraryReference(reader) : null;
-      library = reader.GetString(name.index)?.StartsWith('_') ?? false ? new LibraryReference(reader) : null;
     }
   }
 
@@ -635,20 +452,6 @@ enum AsyncMarker {
     }
   }
 
-  public class NamedExpression
-  {
-    // Note: there is no tag on NamedExpression.
-    public readonly StringReference name;
-    public readonly Expression value;
-
-    public NamedExpression(ComponentReader reader)
-    {
-      name = new StringReference(reader);
-      value = reader.ReadExpression();
-    }
-  }
-
-
   public class MapEntry
   {
     // Note: there is no tag on MapEntry
@@ -707,46 +510,6 @@ enum AsyncMarker {
       name = new StringReference(reader);
       type = reader.ReadDartType();
       initializer = reader.ReadOption(r => r.ReadExpression());
-    }
-  }
-
-  public class TypedefType
-  {
-    public byte tag => Tag;
-    public const byte Tag = 87;
-    public readonly TypedefReference typedefReference;
-    public readonly List<DartType> typeArguments;
-
-    public TypedefType(ComponentReader reader)
-    {
-      typedefReference = new TypedefReference(reader);
-      typeArguments = reader.ReadList(r => r.ReadDartType());
-    }
-  }
-
-  public class TypeParameter
-  {
-    // Note: there is no tag on TypeParameter
-    public readonly Flag flags;
-
-    [Flags]
-    public enum Flag : byte
-    {
-      isGenericCovariantImpl = 0x1,
-    }
-
-    public readonly List<Expression> annotations;
-    public readonly StringReference name; // Cosmetic, may be empty, not unique.
-    public readonly DartType bound; // 'dynamic' if no explicit bound was given.
-    public readonly Option<DartType> defaultType; // type used when the parameter is not passed
-
-    public TypeParameter(ComponentReader reader)
-    {
-      flags = (Flag)reader.ReadByte();
-      annotations =  reader.ReadList(r => r.ReadExpression());
-      name = new StringReference(reader);
-      bound = reader.ReadDartType();
-      defaultType = reader.ReadOption(r => r.ReadDartType());
     }
   }
 }

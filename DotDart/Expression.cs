@@ -115,6 +115,19 @@ namespace DotDart
     }
   }
 
+  public class NamedExpression
+  {
+    // Note: there is no tag on NamedExpression.
+    public readonly StringReference name;
+    public readonly Expression value;
+
+    public NamedExpression(ComponentReader reader)
+    {
+      name = new StringReference(reader);
+      value = reader.ReadExpression();
+    }
+  }
+
   public interface Expression : Node
   {
   }

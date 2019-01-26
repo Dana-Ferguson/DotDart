@@ -28,6 +28,47 @@ namespace DotDart
     }
   }
 
+
+  public class TypedefType
+  {
+    public byte tag => Tag;
+    public const byte Tag = 87;
+    public readonly TypedefReference typedefReference;
+    public readonly List<DartType> typeArguments;
+
+    public TypedefType(ComponentReader reader)
+    {
+      typedefReference = new TypedefReference(reader);
+      typeArguments = reader.ReadList(r => r.ReadDartType());
+    }
+  }
+
+  public class TypeParameter
+  {
+    // Note: there is no tag on TypeParameter
+    public readonly Flag flags;
+
+    [Flags]
+    public enum Flag : byte
+    {
+      isGenericCovariantImpl = 0x1,
+    }
+
+    public readonly List<Expression> annotations;
+    public readonly StringReference name; // Cosmetic, may be empty, not unique.
+    public readonly DartType bound; // 'dynamic' if no explicit bound was given.
+    public readonly Option<DartType> defaultType; // type used when the parameter is not passed
+
+    public TypeParameter(ComponentReader reader)
+    {
+      flags = (Flag)reader.ReadByte();
+      annotations =  reader.ReadList(r => r.ReadExpression());
+      name = new StringReference(reader);
+      bound = reader.ReadDartType();
+      defaultType = reader.ReadOption(r => r.ReadDartType());
+    }
+  }
+
   public interface DartType : Node
   {
   }
