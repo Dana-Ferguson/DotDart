@@ -1,6 +1,17 @@
 using System;
 using System.Collections.Generic;
 
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System.CodeDom.Compiler;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Emit;
+
+using SF = Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
+
 namespace DotDart
 {
   public static class ExpressionExtensions
@@ -120,6 +131,14 @@ namespace DotDart
     public SpecializedIntLiteral(byte tag)
     {
       N = tag - 144;
+    }
+
+    // todo: emitting a Roslyn AST or... is text compiling faster?
+    // e.g. how much speedup would I get out of Roslyn AST?
+    // Would text compiling be much faster to build out.. or just a lot harder to get right?
+    public SyntaxToken GenerateCode()
+    {
+      return SF.Literal(value);
     }
   }
 

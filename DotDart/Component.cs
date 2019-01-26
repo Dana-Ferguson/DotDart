@@ -208,6 +208,7 @@ namespace DotDart
       set
       {
         if (_stringTable != null) throw new Exception($"Attempted to overwrite a {nameof(StringTable)}.");
+        if (value.endOffsets.FirstOrDefault() != 0) throw new Exception($"{nameof(StringTable)} first offset was not 0!");
         var strings = new string[value.endOffsets.Count-1];
 
         // Console.WriteLine($"endOffsets :: {string.Join(", ", endOffsets)}");

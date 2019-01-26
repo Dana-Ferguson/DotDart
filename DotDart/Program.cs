@@ -20,7 +20,16 @@ namespace DotDart
     {
       Console.WriteLine("Hello World!");
 
-      var bytes = System.IO.File.ReadAllBytes("ddc_sdk.dill");
+      // CompileDill();
+      Test01();
+    }
+
+    static void Test01()
+    {
+      var filename = "ddc_sdk.dill";
+      filename = "test_scripts/hello.dill";
+
+      var bytes = System.IO.File.ReadAllBytes(filename);
       Console.WriteLine(bytes.Length);
 
       /*foreach (var b in bytes.Take(16))
@@ -37,6 +46,25 @@ namespace DotDart
       uint componentFileSizeInBytes = ComponentReader.ToUint32(bytes.AsSpan(bytes.Length-4, 4));;
       var componentFile = new ComponentFile(reader, libraryCount, componentFileSizeInBytes);
       int x = 3;
+    }
+
+    static void CompileDill()
+    {
+      // ProcessStartInfo procStartInfo = new ProcessStartInfo("/bin/bash", "-c ls -l");
+      var target = "test_scripts/hello.dill";
+      var source = "test_scripts/hello.dart";
+
+      ProcessStartInfo procStartInfo = new ProcessStartInfo("dart", $"--snapshot={target} --snapshot-kind=kernel {source}");
+      procStartInfo.RedirectStandardOutput = true;
+      procStartInfo.UseShellExecute = false;
+      procStartInfo.CreateNoWindow = true;
+
+      System.Diagnostics.Process proc = new System.Diagnostics.Process();
+      proc.StartInfo = procStartInfo;
+      proc.Start();
+
+      String result = proc.StandardOutput.ReadToEnd();
+      Console.WriteLine(result);
     }
   }
 

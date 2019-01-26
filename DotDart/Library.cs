@@ -108,11 +108,11 @@ namespace DotDart
 
       // procedures = reader.ReadList(r => new Procedure(r));
       procedures = new List<Procedure>((int)procedureCount);
-      for (int i = 0; i < procedures.Count; i++)
+      for (int i = 0; i < procedureCount; i++)
       {
         var start = procedureOffsets[i];
         var end = procedureOffsets[i + 1];
-        // procedures.Add(new Procedure(reader.GetWindow(start, end - start)));
+        procedures.Add(new Procedure(reader.GetWindow(start, end - start)));
       }
     }
   }
