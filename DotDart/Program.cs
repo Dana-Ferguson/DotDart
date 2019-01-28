@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Xml.Linq;
 
@@ -35,6 +37,7 @@ namespace DotDart
       // foreach (var b in bytes.Take(16)) Console.WriteLine(b.ToString("X2"));
 
       var componentFile = ComponentFile.Load(filename);
+      Console.WriteLine(new DartStringBuilder().Serialize(componentFile.libraries).ToString());
       int x = 3;
     }
 
@@ -65,7 +68,6 @@ namespace DotDart
     {
     }
   }
-
 
   // Untagged Pairs
   public class Pair<TKey, TValue>
@@ -152,12 +154,33 @@ namespace DotDart
     // [0, 10, 25, 32, 42] is encoded as [0, 10, 15, 7, 10].
     public readonly List<uint> lineStarts;
 
+    public readonly string uri;
+    public readonly string source;
+    // todo: we could just store begins and ends
+    public readonly string[] lines;
+
     public SourceInfo(ComponentReader reader)
     {
       // todo: micro-optimize
       uriUtf8Bytes = reader.ReadList(r => r.ReadByte());
       sourceUtf8Bytes = reader.ReadList(r => r.ReadByte());
       lineStarts = reader.ReadList(r => r.ReadUint());
+
+      uri = Encoding.UTF8.GetString(uriUtf8Bytes.ToArray());
+      source = Encoding.UTF8.GetString(sourceUtf8Bytes.ToArray());
+      lines = new string[lineStarts.Count];
+
+      // todo: optimize -- this is _not_ efficient
+      int p = 0;
+      for (int i = 0; i < lineStarts.Count; i++)
+      {
+        p += (int)lineStarts[i];
+        var line = p >= source.Length ? $"{p} > {source.Length}" :  source.Substring(p);
+        var end = line.IndexOf(Environment.NewLine, StringComparison.Ordinal);
+        if (end != -1) line = line.Substring(0, end);
+        Console.WriteLine($"*** {line}");
+        lines[i] = line;
+      }
     }
   }
 
@@ -198,6 +221,11 @@ type UriSource {
     {
       fileOffset = reader.ReadUint() - 1;
     }
+
+    public void Serialize(DartStringBuilder sb)
+    {
+      sb.AppendHeader(nameof(FileOffset)).Append($"{fileOffset}");
+    }
   }
 
   public static class OptionExtensions
@@ -225,6 +253,11 @@ type UriSource {
   {
     public byte tag => Tag;
     public const byte Tag = 0;
+
+    public void Serialize(DartStringBuilder sb)
+    {
+      sb.Append($"Nothing<{typeof(T)}>");
+    }
   }
 
   public class Something<T> : Option<T>
@@ -236,6 +269,14 @@ type UriSource {
     public Something(ComponentReader reader, Func<ComponentReader, T> valueReader)
     {
       value = valueReader(reader);
+    }
+
+    public void Serialize(DartStringBuilder sb)
+    {
+      sb.Append($"Something<{typeof(T)}>")
+      .Indent()
+        .Serialize(value)
+      .Dedent();
     }
   }
 

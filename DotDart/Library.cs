@@ -81,7 +81,7 @@ namespace DotDart
       name = new StringReference(reader);
 
       // todo: remove!
-      Console.WriteLine($"{reader.GetString(name.index)} :: {classOffsets.Length} :: {classCount} || {procedureOffsets.Length} :: {procedureCount};");
+      Console.WriteLine($"{reader.GetString(name)} :: {classOffsets.Length} :: {classCount} || {procedureOffsets.Length} :: {procedureCount};");
 
       fileUri = new UriReference(reader);
 

@@ -19,7 +19,7 @@ namespace DotDart
     {
       biasedIndex = reader.ReadUint();
       // todo: remove ~ this is for checking
-      Console.WriteLine($"* '{reader.GetString(this)}'");
+      Console.WriteLine($"CNR: '{reader.GetString(this)}'");
     }
   }
 
@@ -46,10 +46,24 @@ namespace DotDart
   public class StringReference
   {
     public readonly uint index;
+    public readonly string value;
 
     public StringReference(ComponentReader reader)
     {
       index = reader.ReadUint();
+      value = reader.GetString(this);
+      // todo: remove ~ this is for checking
+      Console.WriteLine($"SR: '{value}'");
+    }
+
+    public void Serialize(DartStringBuilder sb)
+    {
+      sb.Append($"({index}) => '{value}'");
+    }
+
+    public override string ToString()
+    {
+      return value;
     }
   }
 
@@ -183,7 +197,7 @@ type Name {
     {
       name = new StringReference(reader);
       // library = name.GetString().StartsWith('_') ? new LibraryReference(reader) : null;
-      library = reader.GetString(name.index)?.StartsWith('_') ?? false ? new LibraryReference(reader) : null;
+      library = reader.GetString(name)?.StartsWith('_') ?? false ? new LibraryReference(reader) : null;
     }
   }
 }

@@ -6,6 +6,7 @@ using System.CodeDom.Compiler;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
@@ -153,6 +154,11 @@ namespace DotDart
     {
       return SF.Literal(value);
     }
+
+    public void Serialize(DartStringBuilder sb)
+    {
+      sb.Append(nameof(SpecializedIntLiteral)).Append($": {value}");
+    }
   }
 
   public class PositiveIntLiteral : Expression
@@ -164,6 +170,11 @@ namespace DotDart
     public PositiveIntLiteral(ComponentReader reader)
     {
       value = reader.ReadUint();
+    }
+
+    public void Serialize(DartStringBuilder sb)
+    {
+      sb.Append(nameof(PositiveIntLiteral)).Append($": {value}");
     }
   }
 
@@ -179,6 +190,11 @@ namespace DotDart
     {
       absoluteValue = reader.ReadUint();
     }
+
+    public void Serialize(DartStringBuilder sb)
+    {
+      sb.Append(nameof(NegativeIntLiteral)).Append($": {value}");
+    }
   }
 
   public class BigIntLiteral : Expression
@@ -190,6 +206,11 @@ namespace DotDart
     public BigIntLiteral(ComponentReader reader)
     {
       valueString = new StringReference(reader);
+    }
+
+    public void Serialize(DartStringBuilder sb)
+    {
+      sb.AppendHeader(nameof(BigIntLiteral)).Append($"{valueString}");
     }
   }
 

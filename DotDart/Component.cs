@@ -250,9 +250,11 @@ namespace DotDart
       return GetString(name.name.index);
     }
 
+    public string GetString(StringReference stringReference) => GetString(stringReference.index);
+
 
     public string GetString() => GetString((int)ReadUint());
-    public string GetString(uint i) => i == 0 ? null : GetString((int) i);
+    private string GetString(uint i) => i == 0 ? null : GetString((int) i);
   }
 
     /*
