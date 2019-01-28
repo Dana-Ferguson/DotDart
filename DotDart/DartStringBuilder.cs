@@ -16,7 +16,7 @@ namespace DotDart
         private void IndentCheck()
         {
             if (!newLine) return;
-            sb.Append(' ', 3 * indent);
+            sb.Append(' ', 4 * indent);
             newLine = false;
         }
 
@@ -140,6 +140,12 @@ namespace DotDart
                 return this;
             }
 
+            if (value is string text)
+            {
+                Append($"'{text}'");
+                return this;
+            }
+
             // Use a custom Serializer if one is available
             var methods = type.GetMethods();
             foreach (var method in methods)
@@ -173,11 +179,14 @@ namespace DotDart
 
             if (value is IEnumerable enumerable)
             {
+                int j = 0;
+
                 Indent();
                 var i = enumerable.GetEnumerator();
                 while (i.MoveNext())
                 {
                     AppendLineIfNeeded();
+                    Append($"[{j++%10}] ");
                     Serialize(i.Current);
                     if (newLine) first = true;
                 }

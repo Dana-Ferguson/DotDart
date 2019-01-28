@@ -14,12 +14,14 @@ namespace DotDart
   public class CanonicalNameReference
   {
     public readonly uint biasedIndex;
+    public readonly string value;
 
     public CanonicalNameReference(ComponentReader reader)
     {
       biasedIndex = reader.ReadUint();
+      value = reader.GetString(this);
       // todo: remove ~ this is for checking
-      Console.WriteLine($"CNR: '{reader.GetString(this)}'");
+      // Console.WriteLine($"CNR: '{reader.GetString(this)}'");
     }
   }
 

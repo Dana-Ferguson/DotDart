@@ -37,7 +37,8 @@ namespace DotDart
       // foreach (var b in bytes.Take(16)) Console.WriteLine(b.ToString("X2"));
 
       var componentFile = ComponentFile.Load(filename);
-      Console.WriteLine(new DartStringBuilder().Serialize(componentFile.libraries).ToString());
+      // Console.WriteLine(new DartStringBuilder().Serialize(componentFile.libraries).ToString());
+      Console.WriteLine(new DartStringBuilder().Serialize(componentFile).ToString());
       int x = 3;
     }
 

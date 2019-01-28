@@ -14,6 +14,8 @@ namespace DotDart
     private int _position = 0;
 
     private string[] _stringTable;
+
+    private List<CanonicalName> _linkTable;
     // overly complicated, :'(
     private ComponentReader _parent;
 
@@ -43,6 +45,7 @@ namespace DotDart
     {
       _bytes = reader._bytes;
       _stringTable = reader._stringTable;
+      _linkTable = reader._linkTable;
       _parent = reader._parent;
       _offset = offset;
       Length = _bytes.Length - offset;
@@ -54,6 +57,7 @@ namespace DotDart
     {
       _bytes = reader._bytes;
       _stringTable = reader._stringTable;
+      _linkTable = reader._linkTable;
       _parent = reader._parent;
       _offset = offset;
       Length = length;
@@ -227,6 +231,15 @@ namespace DotDart
       }
     }
 
+    public List<CanonicalName> canonicalNames
+    {
+      set
+      {
+        if (_linkTable != null) throw new Exception($"Attempted to overwrite {nameof(_linkTable)}.");
+        _parent._linkTable = value;
+      }
+    }
+
     public int WindowOffset => _offset;
 
     private string GetString(int i)
@@ -238,7 +251,18 @@ namespace DotDart
 
     public string GetString(CanonicalNameReference name)
     {
-      return GetString(name.biasedIndex);
+      int i = (int)name.biasedIndex - 1;
+      if (i == -1) return null;
+      return GetCanonicalName(i);
+    }
+
+    private string GetCanonicalName(int i)
+    {
+      // the path we use during initial _linkTable population -- pulls from the StringTable
+      if (_linkTable == null) return GetString(i);
+
+      if (i < 0 || i > _linkTable.Count) return $"Index = {i}; Length = {_linkTable.Count};";
+      return _linkTable[i].name.value;
     }
 
     public string GetString(Name name)
@@ -337,7 +361,7 @@ namespace DotDart
       strings = new StringTable(reader.GetWindow(componentIndex.binaryOffsetForStringTable));
 
       // this is called _linkTable in Kernel Source
-      canonicalNames = reader.GetWindow(componentIndex.binaryOffsetForCanonicalNames).ReadList(r => new CanonicalName(r));
+      reader.canonicalNames = canonicalNames = reader.GetWindow(componentIndex.binaryOffsetForCanonicalNames).ReadList(r => new CanonicalName(r));
 
       // TODO(alexmarkov): reverse metadata mappings and read forwards <-- yes, alex, this should be read forward
       metadataMappings = _readMetadataMappings(reader.GetWindow(componentIndex.binaryOffsetForMetadataMappings,
