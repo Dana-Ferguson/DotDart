@@ -47,5 +47,13 @@ namespace Tests
             var hello = Load("hello");
             hello.ShouldNotBeNull();
         }
+
+        [Fact]
+        public void StringConcatenates()
+        {
+            // Baby steps towards useful unit tests
+            var sc = new StringConcatenation(null, new []{new StringLiteral("hello, "), new StringLiteral("world!"), });
+            sc.Compile().ToString().ShouldBe("$\"hello, world!\"");
+        }
     }
 }

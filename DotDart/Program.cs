@@ -1,13 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Net.Http.Headers;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Text;
-using System.Xml.Linq;
+
 
 // ReSharper disable ClassNeverInstantiated.Global
 // ReSharper disable InconsistentNaming
@@ -37,8 +32,9 @@ namespace DotDart
       // foreach (var b in bytes.Take(16)) Console.WriteLine(b.ToString("X2"));
 
       var componentFile = ComponentFile.Load(filename);
-      // Console.WriteLine(new DartStringBuilder().Serialize(componentFile.libraries).ToString());
       Console.WriteLine(new DartStringBuilder().Serialize(componentFile).ToString());
+      Console.WriteLine();
+
       int x = 3;
     }
 

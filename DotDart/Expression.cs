@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.CodeDom.Compiler;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -449,6 +450,12 @@ namespace DotDart
       fileOffset = new FileOffset(reader);
       target = new MemberReference(reader);
     }
+
+    // this needs to work with StringConcatenation
+    public IdentifierNameSyntax Compile()
+    {
+      return SF.IdentifierName(target.canonicalName.value);
+    }
   }
 
   public class StaticSet : Expression
@@ -518,6 +525,20 @@ namespace DotDart
       fileOffset = new FileOffset(reader);
       target = new MemberReference(reader);
       arguments = new Arguments(reader);
+    }
+
+    object Compile()
+    {
+      throw new NotImplementedException();
+      // SeparatedSyntaxList<ArgumentSyntax>
+      dynamic arguments = null; // this.arguments;
+
+      return SF.InvocationExpression(
+        SF.MemberAccessExpression(
+          SyntaxKind.SimpleMemberAccessExpression,
+          SF.IdentifierName("dart_core"), // todo: I think canonicalName has a library value?
+          SF.IdentifierName(target.canonicalName.value)))
+        .WithArgumentList(SF.ArgumentList(arguments));
     }
   }
 
@@ -627,12 +648,53 @@ namespace DotDart
     public byte tag => Tag;
     public const byte Tag = 36;
     public readonly FileOffset fileOffset;
-    public readonly List<Expression> expressions;
+    public readonly IReadOnlyList<Expression> expressions;
 
     public StringConcatenation(ComponentReader reader)
     {
       fileOffset = new FileOffset(reader);
       expressions = reader.ReadList(r => r.ReadExpression());
+    }
+
+    public StringConcatenation(FileOffset fileOffset, IEnumerable<Expression> expressions)
+    {
+      this.fileOffset = fileOffset;
+      this.expressions = expressions.ToList();
+    }
+
+    public InterpolatedStringExpressionSyntax Compile()
+    {
+      var terms = new List<InterpolatedStringContentSyntax>();
+      foreach (var expression in expressions)
+      {
+        // literals --> SF.InterpolatedStringText()
+        // variables --> SF.Interpolation()
+        switch (expression)
+        {
+          case StringLiteral literal:
+            terms.Add(SF.InterpolatedStringText()
+              .WithTextToken(
+                SF.Token(
+                  SF.TriviaList(),
+                  SyntaxKind.InterpolatedStringTextToken,
+                  literal.value.value,
+                  literal.value.value,
+                  SF.TriviaList())));
+            break;
+          case StaticGet staticGet:
+            terms.Add(SF.Interpolation(
+              staticGet.Compile()));
+            break;
+          default:
+            throw new Exception($"{nameof(StringConcatenation)} case not handled. Type is {expression.GetType()}.");
+        }
+      }
+
+      return SF.InterpolatedStringExpression(
+              SF.Token(SyntaxKind.InterpolatedStringStartToken))
+            .WithContents(
+              SF.List<InterpolatedStringContentSyntax>(terms)
+            );
     }
   }
 
@@ -687,6 +749,16 @@ namespace DotDart
     public StringLiteral(ComponentReader reader)
     {
       value = new StringReference(reader);
+    }
+
+    public StringLiteral(string value)
+    {
+      this.value = new StringReference(value);
+    }
+
+    public object Compile()
+    {
+      return SF.Literal(value.value);
     }
   }
 

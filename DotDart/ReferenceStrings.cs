@@ -58,6 +58,15 @@ namespace DotDart
       Console.WriteLine($"SR: '{value}'");
     }
 
+    /// <summary>
+    /// Used for stuffing values into StringReference for testing
+    /// </summary>
+    public StringReference(string value)
+    {
+      index = uint.MaxValue;
+      this.value = value;
+    }
+
     public void Serialize(DartStringBuilder sb)
     {
       sb.Append($"({index}) => '{value}'");
