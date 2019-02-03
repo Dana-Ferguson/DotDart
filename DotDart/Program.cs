@@ -44,21 +44,33 @@ namespace DotDart
 
     static void CompileDill()
     {
-      // ProcessStartInfo procStartInfo = new ProcessStartInfo("/bin/bash", "-c ls -l");
-      var target = "test_scripts/hello.dill";
-      var source = "test_scripts/hello.dart";
+      const string target = "test_scripts/hello.dill";
+      const string source = "test_scripts/hello.dart";
+      Dart.CompileDill(source, target);
+    }
+  }
 
-      ProcessStartInfo procStartInfo = new ProcessStartInfo("dart", $"--snapshot={target} --snapshot-kind=kernel {source}");
-      procStartInfo.RedirectStandardOutput = true;
-      procStartInfo.UseShellExecute = false;
-      procStartInfo.CreateNoWindow = true;
+  public static class Dart
+  {
+    public static void CompileDill(string source, string target)
+    {
+      var procStartInfo = new ProcessStartInfo("dart", $"--snapshot={target} --snapshot-kind=kernel {source}")
+      {
+        RedirectStandardOutput = true,
+        UseShellExecute = false,
+        CreateNoWindow = true
+      };
 
-      System.Diagnostics.Process proc = new System.Diagnostics.Process();
-      proc.StartInfo = procStartInfo;
+      var proc = new Process
+      {
+        StartInfo = procStartInfo
+      };
+
       proc.Start();
-
-      String result = proc.StandardOutput.ReadToEnd();
+      var result = proc.StandardOutput.ReadToEnd();
       Console.WriteLine(result);
+
+      // todo: test the result?
     }
   }
 
