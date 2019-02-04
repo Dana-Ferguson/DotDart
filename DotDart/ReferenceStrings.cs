@@ -24,9 +24,7 @@ namespace DotDart
       // Console.WriteLine($"CNR: '{reader.GetString(this)}'");
     }
 
-    /// <summary>
-    /// For testing!
-    /// </summary>
+    [Testing]
     public CanonicalNameReference(string value)
     {
       this.value = value;
@@ -157,6 +155,7 @@ namespace DotDart
       this.canonicalName = canonicalName;
     }
 
+    [Testing]
     public MemberReference(string value)
     {
       this.canonicalName = new CanonicalNameReference(value);

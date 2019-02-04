@@ -463,6 +463,7 @@ namespace DotDart
       this.target = target;
     }
 
+    [Testing]
     public StaticGet(string target)
     {
       fileOffset = null;
