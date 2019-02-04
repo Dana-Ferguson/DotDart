@@ -456,6 +456,18 @@ namespace DotDart
     {
       return SF.IdentifierName(target.canonicalName.value);
     }
+
+    public StaticGet(FileOffset fileOffset, MemberReference target)
+    {
+      this.fileOffset = fileOffset;
+      this.target = target;
+    }
+
+    public StaticGet(string target)
+    {
+      fileOffset = null;
+      this.target = new MemberReference(target);
+    }
   }
 
   public class StaticSet : Expression

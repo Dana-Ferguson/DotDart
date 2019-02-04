@@ -23,6 +23,15 @@ namespace DotDart
       // todo: remove ~ this is for checking
       // Console.WriteLine($"CNR: '{reader.GetString(this)}'");
     }
+
+    /// <summary>
+    /// For testing!
+    /// </summary>
+    public CanonicalNameReference(string value)
+    {
+      this.value = value;
+      biasedIndex = uint.MaxValue;
+    }
   }
 
   /*
@@ -141,6 +150,16 @@ namespace DotDart
     public MemberReference(ComponentReader reader)
     {
       canonicalName = new CanonicalNameReference(reader);
+    }
+
+    public MemberReference(CanonicalNameReference canonicalName)
+    {
+      this.canonicalName = canonicalName;
+    }
+
+    public MemberReference(string value)
+    {
+      this.canonicalName = new CanonicalNameReference(value);
     }
   }
 

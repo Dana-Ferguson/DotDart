@@ -53,7 +53,13 @@ namespace Tests
         {
             // Baby steps towards useful unit tests
             var sc = new StringConcatenation(null, new []{new StringLiteral("hello, "), new StringLiteral("world!"), });
-            sc.Compile().ToString().ShouldBe("$\"hello, world!\"");
+
+
+            sc = new StringConcatenation(null, new Expression[]{
+                new StringLiteral("hello, "),
+                new StaticGet("dart"),
+                new StringLiteral("!"), });
+            sc.Compile().ToString().ShouldBe("$\"hello, {dart}!\"");
         }
     }
 }
