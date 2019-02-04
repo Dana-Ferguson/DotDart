@@ -53,6 +53,31 @@ namespace DotDart
       type = reader.ReadDartType();
       initializer = reader.ReadOption(r => r.ReadExpression());
     }
+
+    public Field(CanonicalNameReference canonicalName, UriReference fileUri, FileOffset fileOffset, FileOffset fileEndOffset,
+      Flag flags, Name name, List<Expression> annotations, DartType type, Option<Expression> initializer)
+    {
+      this.canonicalName = canonicalName;
+      this.fileUri = fileUri;
+      this.fileOffset = fileOffset;
+      this.fileEndOffset = fileEndOffset;
+      this.flags = flags;
+      this.name = name;
+      this.annotations = annotations;
+      this.type = type;
+      this.initializer = initializer;
+    }
+
+    [Testing]
+    public Field(CanonicalNameReference canonicalName, Flag flags, Name name, List<Expression> annotations, DartType type, Option<Expression> initializer)
+    {
+      this.canonicalName = canonicalName;
+      this.flags = flags;
+      this.name = name;
+      this.annotations = annotations;
+      this.type = type;
+      this.initializer = initializer;
+    }
   }
 
   public class Constructor : Member
@@ -76,7 +101,6 @@ namespace DotDart
       isSynthetic = 0x4
     }
 
-
     public readonly Name name;
     public readonly List<Expression> annotations;
     public readonly FunctionNode function;
@@ -96,6 +120,33 @@ namespace DotDart
       annotations = reader.ReadList(r => r.ReadExpression());
       function = new FunctionNode(reader);
       initializers = reader.ReadList(r => r.ReadInitializer());
+    }
+
+    public Constructor(CanonicalNameReference canonicalName, UriReference fileUri, FileOffset startFileOffset, FileOffset fileOffset, FileOffset fileEndOffset,
+      Flag flags, Name name, List<Expression> annotations, FunctionNode function, List<Initializer> initializers)
+    {
+      this.canonicalName = canonicalName;
+      this.fileUri = fileUri;
+      this.startFileOffset = startFileOffset;
+      this.fileOffset = fileOffset;
+      this.fileEndOffset = fileEndOffset;
+      this.flags = flags;
+      this.name = name;
+      this.annotations = annotations;
+      this.function = function;
+      this.initializers = initializers;
+    }
+
+    [Testing]
+    public Constructor(CanonicalNameReference canonicalName, Flag flags, Name name,
+      List<Expression> annotations, FunctionNode function, List<Initializer> initializers)
+    {
+      this.canonicalName = canonicalName;
+      this.flags = flags;
+      this.name = name;
+      this.annotations = annotations;
+      this.function = function;
+      this.initializers = initializers;
     }
   }
 
@@ -186,6 +237,38 @@ enum ProcedureKind {
 
       function = reader.ReadOption(r => new FunctionNode(r));
     }
+
+    public Procedure(CanonicalNameReference canonicalName, UriReference fileUri, FileOffset startFileOffset, FileOffset fileOffset, FileOffset fileEndOffset,
+      ProcedureKind kind, Flag flags, Name name, List<Expression> annotations, Option<MemberReference> forwardingStubSuperTarget,
+      Option<MemberReference> forwardingStubInterfaceTarget, Option<FunctionNode> function)
+    {
+      this.canonicalName = canonicalName;
+      this.fileUri = fileUri;
+      this.startFileOffset = startFileOffset;
+      this.fileOffset = fileOffset;
+      this.fileEndOffset = fileEndOffset;
+      this.kind = kind;
+      this.flags = flags;
+      this.name = name;
+      this.annotations = annotations;
+      this.forwardingStubSuperTarget = forwardingStubSuperTarget;
+      this.forwardingStubInterfaceTarget = forwardingStubInterfaceTarget;
+      this.function = function;
+    }
+
+    [Testing]
+    public Procedure(CanonicalNameReference canonicalName, ProcedureKind kind, Flag flags, Name name, List<Expression> annotations,
+      Option<MemberReference> forwardingStubSuperTarget, Option<MemberReference> forwardingStubInterfaceTarget, Option<FunctionNode> function)
+    {
+      this.canonicalName = canonicalName;
+      this.kind = kind;
+      this.flags = flags;
+      this.name = name;
+      this.annotations = annotations;
+      this.forwardingStubSuperTarget = forwardingStubSuperTarget;
+      this.forwardingStubInterfaceTarget = forwardingStubInterfaceTarget;
+      this.function = function;
+    }
   }
 
   public class RedirectingFactoryConstructor : Member
@@ -232,6 +315,43 @@ enum ProcedureKind {
       positionalParameters = reader.ReadList(r => new VariableDeclaration(r));
       namedParameters = reader.ReadList(r => new VariableDeclaration(r));
     }
-  }
 
+    public RedirectingFactoryConstructor(CanonicalNameReference canonicalName, UriReference fileUri, FileOffset fileOffset, FileOffset fileEndOffset,
+      byte flags, Name name, List<Expression> annotations, MemberReference targetReference, List<DartType> typeArguments, List<TypeParameter> typeParameters,
+      uint parameterCount, uint requiredParameterCount, List<VariableDeclaration> positionalParameters, List<VariableDeclaration> namedParameters)
+    {
+      this.canonicalName = canonicalName;
+      this.fileUri = fileUri;
+      this.fileOffset = fileOffset;
+      this.fileEndOffset = fileEndOffset;
+      this.flags = flags;
+      this.name = name;
+      this.annotations = annotations;
+      this.targetReference = targetReference;
+      this.typeArguments = typeArguments;
+      this.typeParameters = typeParameters;
+      this.parameterCount = parameterCount;
+      this.requiredParameterCount = requiredParameterCount;
+      this.positionalParameters = positionalParameters;
+      this.namedParameters = namedParameters;
+    }
+
+    [Testing]
+    public RedirectingFactoryConstructor(CanonicalNameReference canonicalName,
+      byte flags, Name name, List<Expression> annotations, MemberReference targetReference, List<DartType> typeArguments, List<TypeParameter> typeParameters,
+      uint parameterCount, uint requiredParameterCount, List<VariableDeclaration> positionalParameters, List<VariableDeclaration> namedParameters)
+    {
+      this.canonicalName = canonicalName;
+      this.flags = flags;
+      this.name = name;
+      this.annotations = annotations;
+      this.targetReference = targetReference;
+      this.typeArguments = typeArguments;
+      this.typeParameters = typeParameters;
+      this.parameterCount = parameterCount;
+      this.requiredParameterCount = requiredParameterCount;
+      this.positionalParameters = positionalParameters;
+      this.namedParameters = namedParameters;
+    }
+  }
 }
