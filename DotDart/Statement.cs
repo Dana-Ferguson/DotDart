@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace DotDart
 {
@@ -51,6 +52,11 @@ namespace DotDart
     {
       expression = reader.ReadExpression();
     }
+
+    public ExpressionStatement(Expression expression)
+    {
+      this.expression = expression;
+    }
   }
 
   public class Block : Statement
@@ -63,6 +69,11 @@ namespace DotDart
     {
       statements = reader.ReadList(r => r.ReadStatement());
     }
+
+    public Block(List<Statement> statements)
+    {
+      this.statements = statements;
+    }
   }
 
   public class AssertBlock : Statement
@@ -74,6 +85,11 @@ namespace DotDart
     public AssertBlock(ComponentReader reader)
     {
       statements = reader.ReadList(r => r.ReadStatement());
+    }
+
+    public AssertBlock(List<Statement> statements)
+    {
+      this.statements = statements;
     }
   }
 
@@ -99,6 +115,26 @@ namespace DotDart
       conditionEndOffset = new FileOffset(reader);
       message = reader.ReadOption(r => r.ReadExpression());
     }
+
+    public AssertStatement(Expression condition, FileOffset conditionStartOffset, FileOffset conditionEndOffset, Option<Expression> message)
+    {
+      this.condition = condition;
+      this.conditionStartOffset = conditionStartOffset;
+      this.conditionEndOffset = conditionEndOffset;
+      this.message = message;
+    }
+
+    public AssertStatement(Expression condition)
+    {
+      this.condition = condition;
+      message = new Nothing<Expression>();
+    }
+
+    public AssertStatement(Expression condition, Expression message)
+    {
+      this.condition = condition;
+      this.message = new Something<Expression>(message);
+    }
   }
 
   public class LabeledStatement : Statement
@@ -110,6 +146,11 @@ namespace DotDart
     public LabeledStatement(ComponentReader reader)
     {
       body = reader.ReadStatement();
+    }
+
+    public LabeledStatement(Statement body)
+    {
+      this.body = body;
     }
   }
 
@@ -130,6 +171,19 @@ namespace DotDart
       fileOffset = new FileOffset(reader);
       labelIndex = reader.ReadUint();
     }
+
+    public BreakStatement(FileOffset fileOffset, uint labelIndex)
+    {
+      this.fileOffset = fileOffset;
+      this.labelIndex = labelIndex;
+    }
+
+    [Testing]
+    public BreakStatement(uint labelIndex)
+    {
+      this.labelIndex = labelIndex;
+    }
+
   }
 
   public class WhileStatement : Statement
@@ -146,6 +200,20 @@ namespace DotDart
       condition = reader.ReadExpression();
       body = reader.ReadStatement();
     }
+
+    public WhileStatement(FileOffset fileOffset, Expression condition, Statement body)
+    {
+      this.fileOffset = fileOffset;
+      this.condition = condition;
+      this.body = body;
+    }
+
+    [Testing]
+    public WhileStatement(Expression condition, Statement body)
+    {
+      this.condition = condition;
+      this.body = body;
+    }
   }
 
   public class DoStatement : Statement
@@ -161,6 +229,20 @@ namespace DotDart
       fileOffset = new FileOffset(reader);
       body = reader.ReadStatement();
       condition = reader.ReadExpression();
+    }
+
+    public DoStatement(FileOffset fileOffset, Statement body, Expression condition)
+    {
+      this.fileOffset = fileOffset;
+      this.body = body;
+      this.condition = condition;
+    }
+
+    [Testing]
+    public DoStatement(Statement body, Expression condition)
+    {
+      this.body = body;
+      this.condition = condition;
     }
   }
 
@@ -182,6 +264,24 @@ namespace DotDart
       updates = reader.ReadList(r => r.ReadExpression());
       body = reader.ReadStatement();
     }
+
+    public ForStatement(FileOffset fileOffset, List<VariableDeclaration> variables, Option<Expression> condition, List<Expression> updates, Statement body)
+    {
+      this.fileOffset = fileOffset;
+      this.variables = variables;
+      this.condition = condition;
+      this.updates = updates;
+      this.body = body;
+    }
+
+    [Testing]
+    public ForStatement(List<VariableDeclaration> variables, Option<Expression> condition, List<Expression> updates, Statement body)
+    {
+      this.variables = variables;
+      this.condition = condition;
+      this.updates = updates;
+      this.body = body;
+    }
   }
 
   public class ForInStatement : Statement
@@ -201,6 +301,24 @@ namespace DotDart
       variable = new VariableDeclaration(reader);
       iterable = reader.ReadExpression();
       body = reader.ReadStatement();
+    }
+
+    public ForInStatement(FileOffset fileOffset, FileOffset bodyOffset, VariableDeclaration variable, Expression iterable, Statement body)
+    {
+      this.fileOffset = fileOffset;
+      this.bodyOffset = bodyOffset;
+      this.variable = variable;
+      this.iterable = iterable;
+      this.body = body;
+    }
+
+    [Testing]
+    public ForInStatement(FileOffset bodyOffset, VariableDeclaration variable, Expression iterable, Statement body)
+    {
+      this.bodyOffset = bodyOffset;
+      this.variable = variable;
+      this.iterable = iterable;
+      this.body = body;
     }
   }
 
@@ -222,6 +340,24 @@ namespace DotDart
       iterable = reader.ReadExpression();
       body = reader.ReadStatement();
     }
+
+    public AsyncForInStatement(FileOffset fileOffset, FileOffset bodyOffset, VariableDeclaration variable, Expression iterable, Statement body)
+    {
+      this.fileOffset = fileOffset;
+      this.bodyOffset = bodyOffset;
+      this.variable = variable;
+      this.iterable = iterable;
+      this.body = body;
+    }
+
+    [Testing]
+    public AsyncForInStatement(FileOffset bodyOffset, VariableDeclaration variable, Expression iterable, Statement body)
+    {
+      this.bodyOffset = bodyOffset;
+      this.variable = variable;
+      this.iterable = iterable;
+      this.body = body;
+    }
   }
 
   public class SwitchStatement : Statement
@@ -238,6 +374,20 @@ namespace DotDart
       expression = reader.ReadExpression();
       cases = reader.ReadList(r => new SwitchCase(r));
     }
+
+    public SwitchStatement(FileOffset fileOffset, Expression expression, List<SwitchCase> cases)
+    {
+      this.fileOffset = fileOffset;
+      this.expression = expression;
+      this.cases = cases;
+    }
+
+    [Testing]
+    public SwitchStatement(Expression expression, List<SwitchCase> cases)
+    {
+      this.expression = expression;
+      this.cases = cases;
+    }
   }
 
   public class SwitchCase
@@ -253,6 +403,22 @@ namespace DotDart
       isDefault = reader.ReadByte();
       body = reader.ReadStatement();
     }
+
+    public SwitchCase(List<Pair<FileOffset, Expression>> expressions, Statement body, bool isDefault = false)
+    {
+      this.expressions = expressions;
+      this.isDefault = isDefault ? (byte)1 : (byte)0;
+      this.body = body;
+    }
+
+    [Testing]
+    public SwitchCase(List<Expression> expressions, Statement body, bool isDefault = false)
+    {
+      this.expressions = expressions.Select(e => new Pair<FileOffset, Expression>(null, e)).ToList();
+      this.isDefault = isDefault ? (byte)1 : (byte)0;
+      this.body = body;
+    }
+
   }
 
   public class ContinueSwitchStatement : Statement
@@ -277,6 +443,18 @@ namespace DotDart
       fileOffset = new FileOffset(reader);
       caseIndex = reader.ReadUint();
     }
+
+    public ContinueSwitchStatement(FileOffset fileOffset, uint caseIndex)
+    {
+      this.fileOffset = fileOffset;
+      this.caseIndex = caseIndex;
+    }
+
+    [Testing]
+    public ContinueSwitchStatement(uint caseIndex)
+    {
+      this.caseIndex = caseIndex;
+    }
   }
 
   public class IfStatement : Statement
@@ -295,6 +473,22 @@ namespace DotDart
       then = reader.ReadStatement();
       otherwise = reader.ReadStatement();
     }
+
+    public IfStatement(FileOffset fileOffset, Expression condition, Statement then, Statement otherwise)
+    {
+      this.fileOffset = fileOffset;
+      this.condition = condition;
+      this.then = then;
+      this.otherwise = otherwise;
+    }
+
+    [Testing]
+    public IfStatement(Expression condition, Statement then, Statement otherwise)
+    {
+      this.condition = condition;
+      this.then = then;
+      this.otherwise = otherwise;
+    }
   }
 
   public class ReturnStatement : Statement
@@ -308,6 +502,24 @@ namespace DotDart
     {
       fileOffset = new FileOffset(reader);
       expression = reader.ReadOption(r => r.ReadExpression());
+    }
+
+    public ReturnStatement(FileOffset fileOffset, Option<Expression> expression)
+    {
+      this.fileOffset = fileOffset;
+      this.expression = expression;
+    }
+
+    [Testing]
+    public ReturnStatement(Expression expression)
+    {
+      this.expression = new Something<Expression>(expression);
+    }
+
+    [Testing]
+    public ReturnStatement()
+    {
+      this.expression = new Nothing<Expression>();
     }
   }
 
@@ -335,6 +547,13 @@ namespace DotDart
       flags = (Flag) reader.ReadByte();
       catches = reader.ReadList(r => new Catch(r));
     }
+
+    public TryCatch(Statement body, Flag flags, List<Catch> catches)
+    {
+      this.body = body;
+      this.flags = flags;
+      this.catches = catches;
+    }
   }
 
   public class Catch
@@ -353,6 +572,24 @@ namespace DotDart
       stackTrace = reader.ReadOption(r => new VariableDeclaration(r));
       body = reader.ReadStatement();
     }
+
+    public Catch(FileOffset fileOffset, DartType guard, Option<VariableDeclaration> exception, Option<VariableDeclaration> stackTrace, Statement body)
+    {
+      this.fileOffset = fileOffset;
+      this.guard = guard;
+      this.exception = exception;
+      this.stackTrace = stackTrace;
+      this.body = body;
+    }
+
+    [Testing]
+    public Catch(DartType guard, Option<VariableDeclaration> exception, Option<VariableDeclaration> stackTrace, Statement body)
+    {
+      this.guard = guard;
+      this.exception = exception;
+      this.stackTrace = stackTrace;
+      this.body = body;
+    }
   }
 
   public class TryFinally : Statement
@@ -366,6 +603,12 @@ namespace DotDart
     {
       body = reader.ReadStatement();
       finalizer = reader.ReadStatement();
+    }
+
+    public TryFinally(Statement body, Statement finalizer)
+    {
+      this.body = body;
+      this.finalizer = finalizer;
     }
   }
 
@@ -391,6 +634,20 @@ namespace DotDart
       flags = (Flag) reader.ReadByte();
       expression = reader.ReadExpression();
     }
+
+    public YieldStatement(FileOffset fileOffset, Flag flags, Expression expression)
+    {
+      this.fileOffset = fileOffset;
+      this.flags = flags;
+      this.expression = expression;
+    }
+
+    [Testing]
+    public YieldStatement(Flag flags, Expression expression)
+    {
+      this.flags = flags;
+      this.expression = expression;
+    }
   }
 
   public class VariableDeclarationStatement : Statement
@@ -402,6 +659,11 @@ namespace DotDart
     public VariableDeclarationStatement(ComponentReader reader)
     {
       variable = new VariableDeclaration(reader);
+    }
+
+    public VariableDeclarationStatement(VariableDeclaration variable)
+    {
+      this.variable = variable;
     }
   }
 
@@ -424,6 +686,20 @@ namespace DotDart
       fileOffset = new FileOffset(reader);
       variable = new VariableDeclaration(reader);
       function = new FunctionNode(reader);
+    }
+
+    public FunctionDeclaration(FileOffset fileOffset, VariableDeclaration variable, FunctionNode function)
+    {
+      this.fileOffset = fileOffset;
+      this.variable = variable;
+      this.function = function;
+    }
+
+    [Testing]
+    public FunctionDeclaration(VariableDeclaration variable, FunctionNode function)
+    {
+      this.variable = variable;
+      this.function = function;
     }
   }
 }

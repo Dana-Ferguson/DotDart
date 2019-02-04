@@ -280,6 +280,11 @@ type UriSource {
       value = valueReader(reader);
     }
 
+    public Something(T value)
+    {
+      this.value = value;
+    }
+
     public void Serialize(DartStringBuilder sb)
     {
       sb.Append($"Something<{typeof(T)}>")
