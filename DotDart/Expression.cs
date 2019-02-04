@@ -76,7 +76,7 @@ namespace DotDart
         case 149:
         case 150:
         case 151:
-          return new SpecializedIntLiteral((byte) tag);
+          return SpecializedIntLiteral.FromTag((byte) tag);
         // public byte tag => (byte) (128 + N); // Where 0 <= N < 8.
         case 128:
         case 129:
@@ -128,6 +128,12 @@ namespace DotDart
       name = new StringReference(reader);
       value = reader.ReadExpression();
     }
+
+    public NamedExpression(StringReference name, Expression value)
+    {
+      this.name = name;
+      this.value = value;
+    }
   }
 
   public interface Expression : Node
@@ -136,16 +142,23 @@ namespace DotDart
 
   public class SpecializedIntLiteral : Expression
   {
-    private readonly int N;
+    private int N => value + 3;
 
     public byte tag => (byte) (144 + N); // Where 0 <= N < 8.
 
     // Integer literal with value (N - 3), that is, an integer in range -3..4.
-    public int value => N - 3;
+    public readonly int value; // => N - 3;
 
-    public SpecializedIntLiteral(byte tag)
+    public static SpecializedIntLiteral FromTag(byte tag)
     {
-      N = tag - 144;
+      var n = tag - 144 - 3;
+      return new SpecializedIntLiteral(n);
+    }
+
+    private SpecializedIntLiteral(int value)
+    {
+      // N = tag - 144;
+      this.value = value;
     }
 
     // todo: emitting a Roslyn AST or... is text compiling faster?
@@ -173,6 +186,11 @@ namespace DotDart
       value = reader.ReadUint();
     }
 
+    public PositiveIntLiteral(uint value)
+    {
+      this.value = value;
+    }
+
     public void Serialize(DartStringBuilder sb)
     {
       sb.Append(nameof(PositiveIntLiteral)).Append($": {value}");
@@ -192,6 +210,17 @@ namespace DotDart
       absoluteValue = reader.ReadUint();
     }
 
+    public NegativeIntLiteral(uint absoluteValue)
+    {
+      this.absoluteValue = absoluteValue;
+    }
+
+    public NegativeIntLiteral(int negativeValue)
+    {
+      if (negativeValue > 0) throw new Exception("Value must be negative");
+      this.absoluteValue = (uint)(-negativeValue);
+    }
+
     public void Serialize(DartStringBuilder sb)
     {
       sb.Append(nameof(NegativeIntLiteral)).Append($": {value}");
@@ -207,6 +236,17 @@ namespace DotDart
     public BigIntLiteral(ComponentReader reader)
     {
       valueString = new StringReference(reader);
+    }
+
+    public BigIntLiteral(StringReference valueString)
+    {
+      this.valueString = valueString;
+    }
+
+    [Testing]
+    public BigIntLiteral(string valueString)
+    {
+      this.valueString = new StringReference(valueString);
     }
 
     public void Serialize(DartStringBuilder sb)
@@ -230,6 +270,15 @@ namespace DotDart
       receiver = reader.ReadExpression();
       target = new MemberReference(reader);
       value = reader.ReadExpression();
+    }
+
+    public DirectPropertySet(FileOffset fileOffset, Expression receiver, MemberReference target, Expression value)
+    {
+      this.fileOffset = fileOffset;
+      // todo: what is a receiver?
+      this.receiver = receiver;
+      this.target = target;
+      this.value = value;
     }
   }
 
@@ -263,6 +312,25 @@ namespace DotDart
       fileOffset = new FileOffset(reader);
       message = new StringReference(reader);
     }
+
+    public InvalidExpression(FileOffset fileOffset, StringReference message)
+    {
+      this.fileOffset = fileOffset;
+      this.message = message;
+    }
+
+    [Testing]
+    public InvalidExpression(StringReference message)
+    {
+      this.message = message;
+    }
+
+    [Testing]
+    public InvalidExpression(string message)
+    {
+      this.message = new StringReference(message);
+    }
+
   }
 
   public class VariableGet : Expression
@@ -284,6 +352,14 @@ namespace DotDart
       variable = new VariableReference(reader);
       promotedType = reader.ReadOption(r => r.ReadDartType());
     }
+
+    public VariableGet(FileOffset fileOffset, uint variableDeclarationPosition, VariableReference variable, Option<DartType> promotedType)
+    {
+      this.fileOffset = fileOffset;
+      this.variableDeclarationPosition = variableDeclarationPosition;
+      this.variable = variable;
+      this.promotedType = promotedType;
+    }
   }
 
   // todo: I think N is an index? like list[N].. but I am unsure?
@@ -303,6 +379,14 @@ namespace DotDart
       N = tag - 128;
       fileOffset = new FileOffset(reader);
       variableDeclarationPosition = reader.ReadUint();
+    }
+
+    // todo: what is this?
+    public SpecializedVariableGet(FileOffset fileOffset, int n, uint variableDeclarationPosition)
+    {
+      N = n;
+      this.fileOffset = fileOffset;
+      this.variableDeclarationPosition = variableDeclarationPosition;
     }
   }
 
@@ -324,6 +408,14 @@ namespace DotDart
       variableDeclarationPosition = reader.ReadUint();
       variable = new VariableReference(reader);
       value = reader.ReadExpression();
+    }
+
+    public VariableSet(FileOffset fileOffset, uint variableDeclarationPosition, VariableReference variable, Expression value)
+    {
+      this.fileOffset = fileOffset;
+      this.variableDeclarationPosition = variableDeclarationPosition;
+      this.variable = variable;
+      this.value = value;
     }
   }
 
@@ -348,6 +440,14 @@ namespace DotDart
       variableDeclarationPosition = reader.ReadUint();
       value = reader.ReadExpression();
     }
+
+    public SpecializedVariableSet(FileOffset fileOffset, int n, uint variableDeclarationPosition, Expression value)
+    {
+      N = n;
+      this.fileOffset = fileOffset;
+      this.variableDeclarationPosition = variableDeclarationPosition;
+      this.value = value;
+    }
   }
 
   public class PropertyGet : Expression
@@ -365,6 +465,14 @@ namespace DotDart
       receiver = reader.ReadExpression();
       name = new Name(reader);
       interfaceTarget = new MemberReference(reader);
+    }
+
+    public PropertyGet(FileOffset fileOffset, Expression receiver, Name name, MemberReference interfaceTarget)
+    {
+      this.fileOffset = fileOffset;
+      this.receiver = receiver;
+      this.name = name;
+      this.interfaceTarget = interfaceTarget;
     }
   }
 
@@ -386,6 +494,15 @@ namespace DotDart
       value = reader.ReadExpression();
       interfaceTarget = new MemberReference(reader);
     }
+
+    public PropertySet(FileOffset fileOffset, Expression receiver, Name name, Expression value, MemberReference interfaceTarget)
+    {
+      this.fileOffset = fileOffset;
+      this.receiver = receiver;
+      this.name = name;
+      this.value = value;
+      this.interfaceTarget = interfaceTarget;
+    }
   }
 
   public class SuperPropertyGet : Expression
@@ -401,6 +518,13 @@ namespace DotDart
       fileOffset = new FileOffset(reader);
       name = new Name(reader);
       interfaceTarget = new MemberReference(reader);
+    }
+
+    public SuperPropertyGet(FileOffset fileOffset, Name name, MemberReference interfaceTarget)
+    {
+      this.fileOffset = fileOffset;
+      this.name = name;
+      this.interfaceTarget = interfaceTarget;
     }
   }
 
@@ -420,6 +544,14 @@ namespace DotDart
       value = reader.ReadExpression();
       interfaceTarget = new MemberReference(reader);
     }
+
+    public SuperPropertySet(FileOffset fileOffset, Name name, Expression value, MemberReference interfaceTarget)
+    {
+      this.fileOffset = fileOffset;
+      this.name = name;
+      this.value = value;
+      this.interfaceTarget = interfaceTarget;
+    }
   }
 
   public class DirectPropertyGet : Expression
@@ -435,6 +567,13 @@ namespace DotDart
       fileOffset = new FileOffset(reader);
       receiver = reader.ReadExpression();
       target = new MemberReference(reader);
+    }
+
+    public DirectPropertyGet(FileOffset fileOffset, Expression receiver, MemberReference target)
+    {
+      this.fileOffset = fileOffset;
+      this.receiver = receiver;
+      this.target = target;
     }
   }
 
@@ -485,6 +624,13 @@ namespace DotDart
       target = new MemberReference(reader);
       value = reader.ReadExpression();
     }
+
+    public StaticSet(FileOffset fileOffset, MemberReference target, Expression value)
+    {
+      this.fileOffset = fileOffset;
+      this.target = target;
+      this.value = value;
+    }
   }
 
   public class MethodInvocation : Expression
@@ -505,6 +651,15 @@ namespace DotDart
       arguments = new Arguments(reader);
       interfaceTarget = new MemberReference(reader);
     }
+
+    public MethodInvocation(FileOffset fileOffset, Expression receiver, Name name, Arguments arguments, MemberReference interfaceTarget)
+    {
+      this.fileOffset = fileOffset;
+      this.receiver = receiver;
+      this.name = name;
+      this.arguments = arguments;
+      this.interfaceTarget = interfaceTarget;
+    }
   }
 
   public class SuperMethodInvocation : Expression
@@ -523,6 +678,14 @@ namespace DotDart
       arguments = new Arguments(reader);
       interfaceTarget = new MemberReference(reader);
     }
+
+    public SuperMethodInvocation(FileOffset fileOffset, Name name, Arguments arguments, MemberReference interfaceTarget)
+    {
+      this.fileOffset = fileOffset;
+      this.name = name;
+      this.arguments = arguments;
+      this.interfaceTarget = interfaceTarget;
+    }
   }
 
   public class StaticInvocation : Expression
@@ -538,6 +701,13 @@ namespace DotDart
       fileOffset = new FileOffset(reader);
       target = new MemberReference(reader);
       arguments = new Arguments(reader);
+    }
+
+    public StaticInvocation(FileOffset fileOffset, MemberReference target, Arguments arguments)
+    {
+      this.fileOffset = fileOffset;
+      this.target = target;
+      this.arguments = arguments;
     }
 
     object Compile()
@@ -570,6 +740,13 @@ namespace DotDart
       target = new MemberReference(reader);
       arguments = new Arguments(reader);
     }
+
+    public ConstStaticInvocation(FileOffset fileOffset, MemberReference target, Arguments arguments)
+    {
+      this.fileOffset = fileOffset;
+      this.target = target;
+      this.arguments = arguments;
+    }
   }
 
   public class ConstructorInvocation : Expression
@@ -585,6 +762,13 @@ namespace DotDart
       fileOffset = new FileOffset(reader);
       target = new ConstructorReference(reader);
       arguments = new Arguments(reader);
+    }
+
+    public ConstructorInvocation(FileOffset fileOffset, ConstructorReference target, Arguments arguments)
+    {
+      this.fileOffset = fileOffset;
+      this.target = target;
+      this.arguments = arguments;
     }
   }
 
@@ -604,6 +788,13 @@ namespace DotDart
       target = new ConstructorReference(reader);
       arguments = new Arguments(reader);
     }
+
+    public ConstConstructorInvocation(FileOffset fileOffset, ConstructorReference target, Arguments arguments)
+    {
+      this.fileOffset = fileOffset;
+      this.target = target;
+      this.arguments = arguments;
+    }
   }
 
   public class Not : Expression
@@ -615,6 +806,11 @@ namespace DotDart
     public Not(ComponentReader reader)
     {
       operand = reader.ReadExpression();
+    }
+
+    public Not(Expression operand)
+    {
+      this.operand = operand;
     }
   }
 
@@ -636,6 +832,13 @@ namespace DotDart
       logicalOperator = reader.ReadByte();
       right = reader.ReadExpression();
     }
+
+    public LogicalExpression(Expression left, byte logicalOperator, Expression right)
+    {
+      this.left = left;
+      this.logicalOperator = logicalOperator;
+      this.right = right;
+    }
   }
 
   public class ConditionalExpression : Expression
@@ -653,6 +856,14 @@ namespace DotDart
       then = reader.ReadExpression();
       otherwise = reader.ReadExpression();
       staticType = reader.ReadOption(r => r.ReadDartType());
+    }
+
+    public ConditionalExpression(Expression condition, Expression then, Expression otherwise, Option<DartType> staticType)
+    {
+      this.condition = condition;
+      this.then = then;
+      this.otherwise = otherwise;
+      this.staticType = staticType;
     }
   }
 
@@ -725,6 +936,13 @@ namespace DotDart
       operand = reader.ReadExpression();
       type = reader.ReadDartType();
     }
+
+    public IsExpression(FileOffset fileOffset, Expression operand, DartType type)
+    {
+      this.fileOffset = fileOffset;
+      this.operand = operand;
+      this.type = type;
+    }
   }
 
   public class AsExpression : Expression
@@ -750,6 +968,14 @@ namespace DotDart
       flags = (Flag) reader.ReadByte();
       operand = reader.ReadExpression();
       type = reader.ReadDartType();
+    }
+
+    public AsExpression(FileOffset fileOffset, Flag flags, Expression operand, DartType type)
+    {
+      this.fileOffset = fileOffset;
+      this.flags = flags;
+      this.operand = operand;
+      this.type = type;
     }
   }
 
@@ -785,6 +1011,11 @@ namespace DotDart
     {
       value = reader.ReadDouble();
     }
+
+    public DoubleLiteral(double value)
+    {
+      this.value = value;
+    }
   }
 
   public class TrueLiteral : Expression
@@ -815,6 +1046,11 @@ namespace DotDart
     {
       value = new StringReference(reader);
     }
+
+    public SymbolLiteral(StringReference value)
+    {
+      this.value = value;
+    }
   }
 
   public class TypeLiteral : Expression
@@ -826,6 +1062,11 @@ namespace DotDart
     public TypeLiteral(ComponentReader reader)
     {
       type = reader.ReadDartType();
+    }
+
+    public TypeLiteral(DartType type)
+    {
+      this.type = type;
     }
   }
 
@@ -845,6 +1086,11 @@ namespace DotDart
     {
       fileOffset = new FileOffset(reader);
     }
+
+    public Rethrow(FileOffset fileOffset = null)
+    {
+      this.fileOffset = fileOffset;
+    }
   }
 
   public class Throw : Expression
@@ -858,6 +1104,12 @@ namespace DotDart
     {
       fileOffset = new FileOffset(reader);
       value = reader.ReadExpression();
+    }
+
+    public Throw(FileOffset fileOffset, Expression value)
+    {
+      this.fileOffset = fileOffset;
+      this.value = value;
     }
   }
 
@@ -875,6 +1127,13 @@ namespace DotDart
       typeArgument = reader.ReadDartType();
       values = reader.ReadList(r => r.ReadExpression());
     }
+
+    public ListLiteral(FileOffset fileOffset, DartType typeArgument, List<Expression> values)
+    {
+      this.fileOffset = fileOffset;
+      this.typeArgument = typeArgument;
+      this.values = values;
+    }
   }
 
   public class ConstListLiteral : Expression
@@ -890,6 +1149,13 @@ namespace DotDart
       fileOffset = new FileOffset(reader);
       typeArgument = reader.ReadDartType();
       values = reader.ReadList(r => r.ReadExpression());
+    }
+
+    public ConstListLiteral(FileOffset fileOffset, DartType typeArgument, List<Expression> values)
+    {
+      this.fileOffset = fileOffset;
+      this.typeArgument = typeArgument;
+      this.values = values;
     }
   }
 
@@ -907,6 +1173,13 @@ namespace DotDart
       typeArgument = reader.ReadDartType();
       values = reader.ReadList(r => r.ReadExpression());
     }
+
+    public SetLiteral(FileOffset fileOffset, DartType typeArgument, List<Expression> values)
+    {
+      this.fileOffset = fileOffset;
+      this.typeArgument = typeArgument;
+      this.values = values;
+    }
   }
 
   public class ConstSetLiteral : Expression
@@ -922,6 +1195,13 @@ namespace DotDart
       fileOffset = new FileOffset(reader);
       typeArgument = reader.ReadDartType();
       values = reader.ReadList(r => r.ReadExpression());
+    }
+
+    public ConstSetLiteral(FileOffset fileOffset, DartType typeArgument, List<Expression> values)
+    {
+      this.fileOffset = fileOffset;
+      this.typeArgument = typeArgument;
+      this.values = values;
     }
   }
 
@@ -941,6 +1221,14 @@ namespace DotDart
       valueType = reader.ReadDartType();
       entries = reader.ReadList(r => new MapEntry(r));
     }
+
+    public MapLiteral(FileOffset fileOffset, DartType keyType, DartType valueType, List<MapEntry> entries)
+    {
+      this.fileOffset = fileOffset;
+      this.keyType = keyType;
+      this.valueType = valueType;
+      this.entries = entries;
+    }
   }
 
   public class ConstMapLiteral : Expression
@@ -959,6 +1247,14 @@ namespace DotDart
       valueType = reader.ReadDartType();
       entries = reader.ReadList(r => new MapEntry(r));
     }
+
+    public ConstMapLiteral(FileOffset fileOffset, DartType keyType, DartType valueType, List<MapEntry> entries)
+    {
+      this.fileOffset = fileOffset;
+      this.keyType = keyType;
+      this.valueType = valueType;
+      this.entries = entries;
+    }
   }
 
   public class AwaitExpression : Expression
@@ -970,6 +1266,11 @@ namespace DotDart
     public AwaitExpression(ComponentReader reader)
     {
       operand = reader.ReadExpression();
+    }
+
+    public AwaitExpression(Expression operand)
+    {
+      this.operand = operand;
     }
   }
 
@@ -985,6 +1286,12 @@ namespace DotDart
       fileOffset = new FileOffset(reader);
       function = new FunctionNode(reader);
     }
+
+    public FunctionExpression(FileOffset fileOffset, FunctionNode function)
+    {
+      this.fileOffset = fileOffset;
+      this.function = function;
+    }
   }
 
   public class Let : Expression
@@ -998,6 +1305,12 @@ namespace DotDart
     {
       variable = new VariableDeclaration(reader);
       body = reader.ReadExpression();
+    }
+
+    public Let(VariableDeclaration variable, Expression body)
+    {
+      this.variable = variable;
+      this.body = body;
     }
   }
 
@@ -1013,6 +1326,12 @@ namespace DotDart
       expression = reader.ReadExpression();
       typeArguments = reader.ReadList(r => r.ReadDartType());
     }
+
+    public Instantiation(Expression expression, List<DartType> typeArguments)
+    {
+      this.expression = expression;
+      this.typeArguments = typeArguments;
+    }
   }
 
   public class LoadLibrary : Expression
@@ -1024,6 +1343,11 @@ namespace DotDart
     public LoadLibrary(ComponentReader reader)
     {
       deferredImport = new LibraryDependencyReference(reader);
+    }
+
+    public LoadLibrary(LibraryDependencyReference deferredImport)
+    {
+      this.deferredImport = deferredImport;
     }
   }
 
@@ -1037,6 +1361,11 @@ namespace DotDart
     {
       deferredImport = new LibraryDependencyReference(reader);
     }
+
+    public CheckLibraryIsLoaded(LibraryDependencyReference deferredImport)
+    {
+      this.deferredImport = deferredImport;
+    }
   }
 
   public class ConstantExpression : Expression
@@ -1048,6 +1377,11 @@ namespace DotDart
     public ConstantExpression(ComponentReader reader)
     {
       constantReference = new CanonicalNameReference(reader);
+    }
+
+    public ConstantExpression(CanonicalNameReference constantReference)
+    {
+      this.constantReference = constantReference;
     }
   }
 }
