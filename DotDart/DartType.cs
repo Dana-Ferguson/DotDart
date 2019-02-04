@@ -41,6 +41,12 @@ namespace DotDart
       typedefReference = new TypedefReference(reader);
       typeArguments = reader.ReadList(r => r.ReadDartType());
     }
+
+    public TypedefType(TypedefReference typedefReference, List<DartType> typeArguments)
+    {
+      this.typedefReference = typedefReference;
+      this.typeArguments = typeArguments;
+    }
   }
 
   public class TypeParameter
@@ -66,6 +72,15 @@ namespace DotDart
       name = new StringReference(reader);
       bound = reader.ReadDartType();
       defaultType = reader.ReadOption(r => r.ReadDartType());
+    }
+
+    public TypeParameter(Flag flags, List<Expression> annotations, StringReference name, DartType bound, Option<DartType> defaultType)
+    {
+      this.flags = flags;
+      this.annotations = annotations;
+      this.name = name;
+      this.bound = bound;
+      this.defaultType = defaultType;
     }
   }
 
@@ -103,6 +118,12 @@ namespace DotDart
       classReference = new ClassReference(reader);
       typeArguments = reader.ReadList(r => r.ReadDartType());
     }
+
+    public InterfaceType(ClassReference classReference, List<DartType> typeArguments)
+    {
+      this.classReference = classReference;
+      this.typeArguments = typeArguments;
+    }
   }
 
   public class SimpleInterfaceType : DartType
@@ -116,6 +137,11 @@ namespace DotDart
     public SimpleInterfaceType(ComponentReader reader)
     {
       classReference = new ClassReference(reader);
+    }
+
+    public SimpleInterfaceType(ClassReference classReference)
+    {
+      this.classReference = classReference;
     }
   }
 
@@ -152,6 +178,18 @@ namespace DotDart
 
       returnType = reader.ReadDartType();
     }
+
+    public FunctionType(List<TypeParameter> typeParameters, uint requiredParameterCount, uint totalParameterCount,
+      List<DartType> positionalParameters, List<NamedDartType> namedParameters, CanonicalNameReference typedefReference, DartType returnType)
+    {
+      this.typeParameters = typeParameters;
+      this.requiredParameterCount = requiredParameterCount;
+      this.totalParameterCount = totalParameterCount;
+      this.positionalParameters = positionalParameters;
+      this.namedParameters = namedParameters;
+      this.typedefReference = typedefReference;
+      this.returnType = returnType;
+    }
   }
 
   public class SimpleFunctionType : DartType
@@ -177,6 +215,12 @@ namespace DotDart
       // Console.WriteLine(string.Join(", ", positionalParameterNames.Select(n => reader.GetString(n.index))));
       returnType = reader.ReadDartType();
     }
+
+    public SimpleFunctionType(List<DartType> positionalParameters, DartType returnType)
+    {
+      this.positionalParameters = positionalParameters;
+      this.returnType = returnType;
+    }
   }
 
   public class NamedDartType
@@ -188,6 +232,12 @@ namespace DotDart
     {
       name = new StringReference(reader);
       type = reader.ReadDartType();
+    }
+
+    public NamedDartType(StringReference name, DartType type)
+    {
+      this.name = name;
+      this.type = type;
     }
   }
 
@@ -220,6 +270,12 @@ namespace DotDart
     {
       index = reader.ReadUint();
       bound = reader.ReadOption(r => r.ReadDartType());
+    }
+
+    public TypeParameterType(uint index, Option<DartType> bound)
+    {
+      this.index = index;
+      this.bound = bound;
     }
   }
 }
