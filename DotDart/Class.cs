@@ -98,6 +98,31 @@ namespace DotDart
       procedures = reader.ReadList(r => new Procedure(r));
       redirectingFactoryConstructors = reader.ReadList(r => new RedirectingFactoryConstructor(r));
     }
+
+    // todo: this needs a builder class
+    public Class(CanonicalNameReference canonicalName, UriReference fileUri, FileOffset startFileOffset, FileOffset fileOffset, FileOffset fileEndOffset,
+      Flag flags, StringReference name, List<Expression> annotations, List<TypeParameter> typeParameters, Option<DartType> superClass,
+      Option<DartType> mixedInType, List<DartType> implementedClasses, List<Field> fields, List<Constructor> constructors, List<Procedure> procedures,
+      List<RedirectingFactoryConstructor> redirectingFactoryConstructors, uint[] procedureOffsets)
+    {
+      this.canonicalName = canonicalName;
+      this.fileUri = fileUri;
+      this.startFileOffset = startFileOffset;
+      this.fileOffset = fileOffset;
+      this.fileEndOffset = fileEndOffset;
+      this.flags = flags;
+      this.name = name;
+      this.annotations = annotations;
+      this.typeParameters = typeParameters;
+      this.superClass = superClass;
+      this.mixedInType = mixedInType;
+      this.implementedClasses = implementedClasses;
+      this.fields = fields;
+      this.constructors = constructors;
+      this.procedures = procedures;
+      this.redirectingFactoryConstructors = redirectingFactoryConstructors;
+      this.procedureOffsets = procedureOffsets;
+    }
   }
 
 }
