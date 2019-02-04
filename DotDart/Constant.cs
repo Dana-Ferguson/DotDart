@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Net.Http.Headers;
 
 namespace DotDart
 {
@@ -51,6 +52,11 @@ namespace DotDart
     {
       value = reader.ReadByte();
     }
+
+    public BoolConstant(bool value)
+    {
+      this.value = value ? (byte)1 : (byte)0;
+    }
   }
 
 
@@ -86,6 +92,23 @@ namespace DotDart
           throw new Exception($"{nameof(IntConstant)}: improper tag ({tag})");
       }
     }
+
+    public IntConstant(int value)
+    {
+      if (value < 0)
+      {
+        this.value = new NegativeIntLiteral(value);
+      }
+      else
+      {
+        this.value = new PositiveIntLiteral((uint)value);
+      }
+    }
+
+    public IntConstant(BigIntLiteral value)
+    {
+      this.value = value;
+    }
   }
 
   public class DoubleConstant : Constant
@@ -98,6 +121,11 @@ namespace DotDart
     {
       value = reader.ReadDouble();
     }
+
+    public DoubleConstant(double value)
+    {
+      this.value = value;
+    }
   }
 
   public class StringConstant : Constant
@@ -109,6 +137,16 @@ namespace DotDart
     public StringConstant(ComponentReader reader)
     {
       value = new StringReference(reader);
+    }
+
+    public StringConstant(StringReference value)
+    {
+      this.value = value;
+    }
+
+    public StringConstant(string value)
+    {
+      this.value = new StringReference(value);
     }
   }
 
@@ -123,6 +161,22 @@ namespace DotDart
     {
       library = new LibraryReference(reader);
       name = new StringReference(reader);
+    }
+
+    public SymbolConstant(LibraryReference library, StringReference name)
+    {
+      this.library = library;
+      this.name = name;
+    }
+
+    public SymbolConstant(StringReference name)
+    {
+      this.name = name;
+    }
+
+    public SymbolConstant(string name)
+    {
+      this.name = new StringReference(name);
     }
   }
 
@@ -148,6 +202,13 @@ namespace DotDart
       valueType = reader.ReadDartType();
       keyValueList = reader.ReadList(r => (new ConstantReference(r), new ConstantReference(r)));
     }
+
+    public MapConstant(DartType keyType, DartType valueType, List<(ConstantReference, ConstantReference)> keyValueList)
+    {
+      this.keyType = keyType;
+      this.valueType = valueType;
+      this.keyValueList = keyValueList;
+    }
   }
 
   public class ListConstant : Constant
@@ -161,6 +222,12 @@ namespace DotDart
     {
       type = reader.ReadDartType();
       values = reader.ReadList(r => new ConstantReference(r));
+    }
+
+    public ListConstant(DartType type, List<ConstantReference> values)
+    {
+      this.type = type;
+      this.values = values;
     }
   }
 
@@ -178,6 +245,13 @@ namespace DotDart
       typeArguments = reader.ReadList(r => r.ReadDartType());
       values = reader.ReadList(r => (new FieldReference(r), new ConstantReference(r)));
     }
+
+    public InstanceConstant(CanonicalNameReference classNameReference, List<DartType> typeArguments, List<(FieldReference, ConstantReference)> values)
+    {
+      this.classNameReference = classNameReference;
+      this.typeArguments = typeArguments;
+      this.values = values;
+    }
   }
 
   public class PartialInstantiationConstant : Constant
@@ -192,6 +266,12 @@ namespace DotDart
       tearOffConstant = new CanonicalNameReference(reader);
       typeArguments = reader.ReadList(r => r.ReadDartType());
     }
+
+    public PartialInstantiationConstant(CanonicalNameReference tearOffConstant, List<DartType> typeArguments)
+    {
+      this.tearOffConstant = tearOffConstant;
+      this.typeArguments = typeArguments;
+    }
   }
 
   public class TearOffConstant : Constant
@@ -204,6 +284,11 @@ namespace DotDart
     {
       staticProcedureReference = new CanonicalNameReference(reader);
     }
+
+    public TearOffConstant(CanonicalNameReference staticProcedureReference)
+    {
+      this.staticProcedureReference = staticProcedureReference;
+    }
   }
 
   public class TypeLiteralConstant : Constant
@@ -215,6 +300,11 @@ namespace DotDart
     public TypeLiteralConstant(ComponentReader reader)
     {
       type = reader.ReadDartType();
+    }
+
+    public TypeLiteralConstant(DartType type)
+    {
+      this.type = type;
     }
   }
 
@@ -282,6 +372,11 @@ namespace DotDart
     public UnevaluatedConstant(ComponentReader reader)
     {
       expression = reader.ReadExpression();
+    }
+
+    public UnevaluatedConstant(Expression expression)
+    {
+      this.expression = expression;
     }
   }
 }
