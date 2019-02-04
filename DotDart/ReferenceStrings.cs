@@ -25,10 +25,10 @@ namespace DotDart
     }
 
     [Testing]
-    public CanonicalNameReference(string value)
+    public CanonicalNameReference(string value, uint biasedIndex = uint.MaxValue)
     {
       this.value = value;
-      biasedIndex = uint.MaxValue;
+      this.biasedIndex = biasedIndex;
     }
   }
 
@@ -44,6 +44,11 @@ namespace DotDart
     public UriReference(ComponentReader reader)
     {
       index = reader.ReadUint();
+    }
+
+    public UriReference(uint index)
+    {
+      this.index = index;
     }
   }
 
@@ -227,6 +232,11 @@ type Name {
       name = new StringReference(reader);
       // library = name.GetString().StartsWith('_') ? new LibraryReference(reader) : null;
       library = reader.GetString(name)?.StartsWith('_') ?? false ? new LibraryReference(reader) : null;
+    }
+
+    public Name(string name)
+    {
+      this.name = new StringReference(name);
     }
   }
 }
