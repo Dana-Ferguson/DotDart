@@ -34,6 +34,11 @@ namespace DotDart
     {
       isSynthetic = reader.ReadByte();
     }
+
+    public InvalidInitializer(bool isSynthetic)
+    {
+      this.isSynthetic = isSynthetic ? (byte)0 : (byte)1;
+    }
   }
 
   public class FieldInitializer : Initializer
@@ -49,6 +54,19 @@ namespace DotDart
       isSynthetic = reader.ReadByte();
       field = new FieldReference(reader);
       value = reader.ReadExpression();
+    }
+
+    public FieldInitializer(FieldReference field, Expression value, bool isSynthetic)
+    {
+      this.isSynthetic = isSynthetic ? (byte)0 : (byte)1;
+      this.field = field;
+      this.value = value;
+    }
+
+    public FieldInitializer(FieldReference field, Expression value)
+    {
+      this.field = field;
+      this.value = value;
     }
   }
 
@@ -68,6 +86,22 @@ namespace DotDart
       target = new ConstructorReference(reader);
       arguments = new Arguments(reader);
     }
+
+    public SuperInitializer(FileOffset fileOffset, ConstructorReference target, Arguments arguments, bool isSynthetic = false)
+    {
+      this.isSynthetic = isSynthetic ? (byte)0 : (byte)1;
+      this.fileOffset = fileOffset;
+      this.target = target;
+      this.arguments = arguments;
+    }
+
+    [Testing]
+    public SuperInitializer(ConstructorReference target, Arguments arguments, bool isSynthetic = false)
+    {
+      this.isSynthetic = isSynthetic ? (byte)0 : (byte)1;
+      this.target = target;
+      this.arguments = arguments;
+    }
   }
 
   public class RedirectingInitializer : Initializer
@@ -86,6 +120,23 @@ namespace DotDart
       target = new ConstructorReference(reader);
       arguments = new Arguments(reader);
     }
+
+    public RedirectingInitializer(FileOffset fileOffset, ConstructorReference target, Arguments arguments, bool isSynthetic = false)
+    {
+      this.isSynthetic = isSynthetic ? (byte)0 : (byte)1;
+      this.fileOffset = fileOffset;
+      this.target = target;
+      this.arguments = arguments;
+    }
+
+    [Testing]
+    public RedirectingInitializer(ConstructorReference target, Arguments arguments, bool isSynthetic = false)
+    {
+      this.isSynthetic = isSynthetic ? (byte)0 : (byte)1;
+      this.target = target;
+      this.arguments = arguments;
+    }
+
   }
 
   public class LocalInitializer : Initializer
@@ -99,6 +150,12 @@ namespace DotDart
     {
       isSynthetic = reader.ReadByte();
       variable = new VariableDeclaration(reader);
+    }
+
+    public LocalInitializer(VariableDeclaration variable, bool isSynthetic = false)
+    {
+      this.isSynthetic = isSynthetic ? (byte)0 : (byte)1;
+      this.variable = variable;
     }
   }
 
@@ -115,6 +172,12 @@ namespace DotDart
       isSynthetic = reader.ReadByte();
       // statement = new AssertStatement(reader);
       statement = reader.ReadStatement() as AssertStatement;
+    }
+
+    public AssertInitializer(AssertStatement statement, bool isSynthetic = false)
+    {
+      this.isSynthetic = isSynthetic ? (byte)0 : (byte)1;
+      this.statement = statement;
     }
   }
 }
