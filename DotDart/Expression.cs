@@ -280,6 +280,14 @@ namespace DotDart
       this.target = target;
       this.value = value;
     }
+
+    [Testing]
+    public DirectPropertySet(Expression receiver, MemberReference target, Expression value)
+    {
+      this.receiver = receiver;
+      this.target = target;
+      this.value = value;
+    }
   }
 
   public class DirectMethodInvocation : Expression
@@ -297,6 +305,22 @@ namespace DotDart
       receiver = reader.ReadExpression();
       target = new MemberReference(reader);
       arguments = new Arguments(reader);
+    }
+
+    public DirectMethodInvocation(FileOffset fileOffset, Expression receiver, MemberReference target, Arguments arguments)
+    {
+      this.fileOffset = fileOffset;
+      this.receiver = receiver;
+      this.target = target;
+      this.arguments = arguments;
+    }
+
+    [Testing]
+    public DirectMethodInvocation(Expression receiver, MemberReference target, Arguments arguments)
+    {
+      this.receiver = receiver;
+      this.target = target;
+      this.arguments = arguments;
     }
   }
 
@@ -360,6 +384,14 @@ namespace DotDart
       this.variable = variable;
       this.promotedType = promotedType;
     }
+
+    [Testing]
+    public VariableGet(uint variableDeclarationPosition, VariableReference variable, Option<DartType> promotedType)
+    {
+      this.variableDeclarationPosition = variableDeclarationPosition;
+      this.variable = variable;
+      this.promotedType = promotedType;
+    }
   }
 
   // todo: I think N is an index? like list[N].. but I am unsure?
@@ -388,6 +420,13 @@ namespace DotDart
       this.fileOffset = fileOffset;
       this.variableDeclarationPosition = variableDeclarationPosition;
     }
+
+    [Testing]
+    public SpecializedVariableGet(int n, uint variableDeclarationPosition)
+    {
+      N = n;
+      this.variableDeclarationPosition = variableDeclarationPosition;
+    }
   }
 
   public class VariableSet : Expression
@@ -413,6 +452,14 @@ namespace DotDart
     public VariableSet(FileOffset fileOffset, uint variableDeclarationPosition, VariableReference variable, Expression value)
     {
       this.fileOffset = fileOffset;
+      this.variableDeclarationPosition = variableDeclarationPosition;
+      this.variable = variable;
+      this.value = value;
+    }
+
+    [Testing]
+    public VariableSet(uint variableDeclarationPosition, VariableReference variable, Expression value)
+    {
       this.variableDeclarationPosition = variableDeclarationPosition;
       this.variable = variable;
       this.value = value;
@@ -448,6 +495,14 @@ namespace DotDart
       this.variableDeclarationPosition = variableDeclarationPosition;
       this.value = value;
     }
+
+    [Testing]
+    public SpecializedVariableSet(int n, uint variableDeclarationPosition, Expression value)
+    {
+      N = n;
+      this.variableDeclarationPosition = variableDeclarationPosition;
+      this.value = value;
+    }
   }
 
   public class PropertyGet : Expression
@@ -470,6 +525,14 @@ namespace DotDart
     public PropertyGet(FileOffset fileOffset, Expression receiver, Name name, MemberReference interfaceTarget)
     {
       this.fileOffset = fileOffset;
+      this.receiver = receiver;
+      this.name = name;
+      this.interfaceTarget = interfaceTarget;
+    }
+
+    [Testing]
+    public PropertyGet(Expression receiver, Name name, MemberReference interfaceTarget)
+    {
       this.receiver = receiver;
       this.name = name;
       this.interfaceTarget = interfaceTarget;
@@ -503,6 +566,15 @@ namespace DotDart
       this.value = value;
       this.interfaceTarget = interfaceTarget;
     }
+
+    [Testing]
+    public PropertySet(Expression receiver, Name name, Expression value, MemberReference interfaceTarget)
+    {
+      this.receiver = receiver;
+      this.name = name;
+      this.value = value;
+      this.interfaceTarget = interfaceTarget;
+    }
   }
 
   public class SuperPropertyGet : Expression
@@ -523,6 +595,13 @@ namespace DotDart
     public SuperPropertyGet(FileOffset fileOffset, Name name, MemberReference interfaceTarget)
     {
       this.fileOffset = fileOffset;
+      this.name = name;
+      this.interfaceTarget = interfaceTarget;
+    }
+
+    [Testing]
+    public SuperPropertyGet(Name name, MemberReference interfaceTarget)
+    {
       this.name = name;
       this.interfaceTarget = interfaceTarget;
     }
@@ -552,6 +631,14 @@ namespace DotDart
       this.value = value;
       this.interfaceTarget = interfaceTarget;
     }
+
+    [Testing]
+    public SuperPropertySet(Name name, Expression value, MemberReference interfaceTarget)
+    {
+      this.name = name;
+      this.value = value;
+      this.interfaceTarget = interfaceTarget;
+    }
   }
 
   public class DirectPropertyGet : Expression
@@ -572,6 +659,13 @@ namespace DotDart
     public DirectPropertyGet(FileOffset fileOffset, Expression receiver, MemberReference target)
     {
       this.fileOffset = fileOffset;
+      this.receiver = receiver;
+      this.target = target;
+    }
+
+    [Testing]
+    public DirectPropertyGet(Expression receiver, MemberReference target)
+    {
       this.receiver = receiver;
       this.target = target;
     }
@@ -631,6 +725,13 @@ namespace DotDart
       this.target = target;
       this.value = value;
     }
+
+    [Testing]
+    public StaticSet(MemberReference target, Expression value)
+    {
+      this.target = target;
+      this.value = value;
+    }
   }
 
   public class MethodInvocation : Expression
@@ -655,6 +756,15 @@ namespace DotDart
     public MethodInvocation(FileOffset fileOffset, Expression receiver, Name name, Arguments arguments, MemberReference interfaceTarget)
     {
       this.fileOffset = fileOffset;
+      this.receiver = receiver;
+      this.name = name;
+      this.arguments = arguments;
+      this.interfaceTarget = interfaceTarget;
+    }
+
+    [Testing]
+    public MethodInvocation(Expression receiver, Name name, Arguments arguments, MemberReference interfaceTarget)
+    {
       this.receiver = receiver;
       this.name = name;
       this.arguments = arguments;
@@ -686,6 +796,14 @@ namespace DotDart
       this.arguments = arguments;
       this.interfaceTarget = interfaceTarget;
     }
+
+    [Testing]
+    public SuperMethodInvocation(Name name, Arguments arguments, MemberReference interfaceTarget)
+    {
+      this.name = name;
+      this.arguments = arguments;
+      this.interfaceTarget = interfaceTarget;
+    }
   }
 
   public class StaticInvocation : Expression
@@ -706,6 +824,13 @@ namespace DotDart
     public StaticInvocation(FileOffset fileOffset, MemberReference target, Arguments arguments)
     {
       this.fileOffset = fileOffset;
+      this.target = target;
+      this.arguments = arguments;
+    }
+
+    [Testing]
+    public StaticInvocation(MemberReference target, Arguments arguments)
+    {
       this.target = target;
       this.arguments = arguments;
     }
@@ -747,6 +872,13 @@ namespace DotDart
       this.target = target;
       this.arguments = arguments;
     }
+
+    [Testing]
+    public ConstStaticInvocation(MemberReference target, Arguments arguments)
+    {
+      this.target = target;
+      this.arguments = arguments;
+    }
   }
 
   public class ConstructorInvocation : Expression
@@ -767,6 +899,13 @@ namespace DotDart
     public ConstructorInvocation(FileOffset fileOffset, ConstructorReference target, Arguments arguments)
     {
       this.fileOffset = fileOffset;
+      this.target = target;
+      this.arguments = arguments;
+    }
+
+    [Testing]
+    public ConstructorInvocation(ConstructorReference target, Arguments arguments)
+    {
       this.target = target;
       this.arguments = arguments;
     }
@@ -792,6 +931,13 @@ namespace DotDart
     public ConstConstructorInvocation(FileOffset fileOffset, ConstructorReference target, Arguments arguments)
     {
       this.fileOffset = fileOffset;
+      this.target = target;
+      this.arguments = arguments;
+    }
+
+    [Testing]
+    public ConstConstructorInvocation(ConstructorReference target, Arguments arguments)
+    {
       this.target = target;
       this.arguments = arguments;
     }
@@ -886,6 +1032,12 @@ namespace DotDart
       this.expressions = expressions.ToList();
     }
 
+    [Testing]
+    public StringConcatenation(IEnumerable<Expression> expressions)
+    {
+      this.expressions = expressions.ToList();
+    }
+
     public InterpolatedStringExpressionSyntax Compile()
     {
       var terms = new List<InterpolatedStringContentSyntax>();
@@ -943,6 +1095,13 @@ namespace DotDart
       this.operand = operand;
       this.type = type;
     }
+
+    [Testing]
+    public IsExpression(Expression operand, DartType type)
+    {
+      this.operand = operand;
+      this.type = type;
+    }
   }
 
   public class AsExpression : Expression
@@ -973,6 +1132,14 @@ namespace DotDart
     public AsExpression(FileOffset fileOffset, Flag flags, Expression operand, DartType type)
     {
       this.fileOffset = fileOffset;
+      this.flags = flags;
+      this.operand = operand;
+      this.type = type;
+    }
+
+    [Testing]
+    public AsExpression(Flag flags, Expression operand, DartType type)
+    {
       this.flags = flags;
       this.operand = operand;
       this.type = type;
@@ -1051,6 +1218,12 @@ namespace DotDart
     {
       this.value = value;
     }
+
+    [Testing]
+    public SymbolLiteral(string value)
+    {
+      this.value = new StringReference(value);
+    }
   }
 
   public class TypeLiteral : Expression
@@ -1087,9 +1260,14 @@ namespace DotDart
       fileOffset = new FileOffset(reader);
     }
 
-    public Rethrow(FileOffset fileOffset = null)
+    public Rethrow(FileOffset fileOffset)
     {
       this.fileOffset = fileOffset;
+    }
+
+    [Testing]
+    public Rethrow()
+    {
     }
   }
 
@@ -1109,6 +1287,12 @@ namespace DotDart
     public Throw(FileOffset fileOffset, Expression value)
     {
       this.fileOffset = fileOffset;
+      this.value = value;
+    }
+
+    [Testing]
+    public Throw(Expression value)
+    {
       this.value = value;
     }
   }
@@ -1131,6 +1315,13 @@ namespace DotDart
     public ListLiteral(FileOffset fileOffset, DartType typeArgument, List<Expression> values)
     {
       this.fileOffset = fileOffset;
+      this.typeArgument = typeArgument;
+      this.values = values;
+    }
+
+    [Testing]
+    public ListLiteral(DartType typeArgument, List<Expression> values)
+    {
       this.typeArgument = typeArgument;
       this.values = values;
     }
@@ -1157,6 +1348,13 @@ namespace DotDart
       this.typeArgument = typeArgument;
       this.values = values;
     }
+
+    [Testing]
+    public ConstListLiteral(DartType typeArgument, List<Expression> values)
+    {
+      this.typeArgument = typeArgument;
+      this.values = values;
+    }
   }
 
   public class SetLiteral : Expression
@@ -1180,6 +1378,13 @@ namespace DotDart
       this.typeArgument = typeArgument;
       this.values = values;
     }
+
+    [Testing]
+    public SetLiteral(DartType typeArgument, List<Expression> values)
+    {
+      this.typeArgument = typeArgument;
+      this.values = values;
+    }
   }
 
   public class ConstSetLiteral : Expression
@@ -1200,6 +1405,13 @@ namespace DotDart
     public ConstSetLiteral(FileOffset fileOffset, DartType typeArgument, List<Expression> values)
     {
       this.fileOffset = fileOffset;
+      this.typeArgument = typeArgument;
+      this.values = values;
+    }
+
+    [Testing]
+    public ConstSetLiteral(DartType typeArgument, List<Expression> values)
+    {
       this.typeArgument = typeArgument;
       this.values = values;
     }
@@ -1229,6 +1441,14 @@ namespace DotDart
       this.valueType = valueType;
       this.entries = entries;
     }
+
+    [Testing]
+    public MapLiteral(DartType keyType, DartType valueType, List<MapEntry> entries)
+    {
+      this.keyType = keyType;
+      this.valueType = valueType;
+      this.entries = entries;
+    }
   }
 
   public class ConstMapLiteral : Expression
@@ -1251,6 +1471,14 @@ namespace DotDart
     public ConstMapLiteral(FileOffset fileOffset, DartType keyType, DartType valueType, List<MapEntry> entries)
     {
       this.fileOffset = fileOffset;
+      this.keyType = keyType;
+      this.valueType = valueType;
+      this.entries = entries;
+    }
+
+    [Testing]
+    public ConstMapLiteral(DartType keyType, DartType valueType, List<MapEntry> entries)
+    {
       this.keyType = keyType;
       this.valueType = valueType;
       this.entries = entries;
@@ -1290,6 +1518,12 @@ namespace DotDart
     public FunctionExpression(FileOffset fileOffset, FunctionNode function)
     {
       this.fileOffset = fileOffset;
+      this.function = function;
+    }
+
+    [Testing]
+    public FunctionExpression(FunctionNode function)
+    {
       this.function = function;
     }
   }
