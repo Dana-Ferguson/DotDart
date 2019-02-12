@@ -1,16 +1,11 @@
 using System;
 using System.Collections.Generic;
 
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System.CodeDom.Compiler;
 using System.Linq;
-using System.Net;
-using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Text;
+
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Emit;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 using SF = Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
@@ -117,6 +112,10 @@ namespace DotDart
     }
   }
 
+  public interface Expression : Node
+  {
+  }
+
   public class NamedExpression
   {
     // Note: there is no tag on NamedExpression.
@@ -134,10 +133,6 @@ namespace DotDart
       this.name = name;
       this.value = value;
     }
-  }
-
-  public interface Expression : Node
-  {
   }
 
   public class SpecializedIntLiteral : Expression
@@ -164,7 +159,7 @@ namespace DotDart
     // todo: emitting a Roslyn AST or... is text compiling faster?
     // e.g. how much speedup would I get out of Roslyn AST?
     // Would text compiling be much faster to build out.. or just a lot harder to get right?
-    public SyntaxToken GenerateCode()
+    public SyntaxToken Compile()
     {
       return SF.Literal(value);
     }
@@ -851,7 +846,7 @@ namespace DotDart
   }
 
 // Constant call to an external constant factory.
-  public class ConstStaticInvocation : Expression
+  public class ConstStaticInvocation : Expression, IExpressionSyntax
   {
     public byte tag => Tag;
     public const byte Tag = 18; // Note: tag is out of order.
@@ -878,6 +873,17 @@ namespace DotDart
     {
       this.target = target;
       this.arguments = arguments;
+    }
+
+    public ExpressionSyntax ToExpressionSyntax()
+    {
+      var invocationExpression = SF.InvocationExpression(SF.IdentifierName(target.canonicalName.value));
+      if (arguments.numArguments != 0)
+      {
+        invocationExpression = invocationExpression.WithArgumentList(arguments.ToArgumentListSyntax());
+      }
+
+      return invocationExpression;
     }
   }
 
@@ -1146,7 +1152,7 @@ namespace DotDart
     }
   }
 
-  public class StringLiteral : Expression
+  public class StringLiteral : Expression, ISyntaxToken, ILiteralExpressionSyntax
   {
     public byte tag => Tag;
     public const byte Tag = 39;
@@ -1162,9 +1168,17 @@ namespace DotDart
       this.value = new StringReference(value);
     }
 
-    public object Compile()
+    // todo: does this get used? -- should this be rolled into ToLiteralExpressionSyntax
+    public SyntaxToken ToSyntaxToken()
     {
       return SF.Literal(value.value);
+    }
+
+    public LiteralExpressionSyntax ToLiteralExpressionSyntax()
+    {
+      return SF.LiteralExpression(
+        SyntaxKind.StringLiteralExpression,
+        ToSyntaxToken());
     }
   }
 

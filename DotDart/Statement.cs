@@ -2,6 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+
+using SF = Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
+
+
 namespace DotDart
 {
 
@@ -42,7 +49,7 @@ namespace DotDart
   {
   }
 
-  public class ExpressionStatement : Statement
+  public class ExpressionStatement : Statement, IStatementSyntax
   {
     public byte tag => Tag;
     public const byte Tag = 61;
@@ -57,9 +64,18 @@ namespace DotDart
     {
       this.expression = expression;
     }
+
+
+    public StatementSyntax ToStatementSyntax()
+    {
+      // todo: pretty sure this is wrong
+      return SF.ExpressionStatement(expression.ToLiteralExpressionSyntax());
+      // return SF.EqualsValueClause(
+      //  expression.ToLiteralExpressionSyntax());
+    }
   }
 
-  public class Block : Statement
+  public class Block : Statement, IStatementSyntax
   {
     public byte tag => Tag;
     public const byte Tag = 62;
@@ -73,6 +89,25 @@ namespace DotDart
     public Block(List<Statement> statements)
     {
       this.statements = statements;
+    }
+
+    public StatementSyntax ToStatementSyntax()
+    {
+      var rStatements = new List<StatementSyntax>();
+      foreach (var statement in statements)
+      {
+        rStatements.Add(statement.ToStatementSyntax());
+      }
+
+      if (statements.Count == 0) throw new Exception("Improper call");
+
+      if (statements.Count == 1)
+      {
+        // todo: is this needed?
+        return SF.Block(SF.SingletonList<StatementSyntax>(rStatements.First()));
+      }
+
+      return SF.Block(rStatements);
     }
   }
 

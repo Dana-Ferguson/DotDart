@@ -1,6 +1,12 @@
 using System;
 using System.Collections.Generic;
 
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+
+using SF = Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
+
 namespace DotDart
 {
   public static class DartTypeExtensions
@@ -94,10 +100,15 @@ namespace DotDart
     public const byte Tag = 90;
   }
 
-  public class DynamicType : DartType
+  public class DynamicType : DartType, ITypeSyntax
   {
     public byte tag => Tag;
     public const byte Tag = 91;
+
+    public TypeSyntax ToTypeSyntax()
+    {
+      return SF.IdentifierName("dynamic");
+    }
   }
 
   public class VoidType : DartType
@@ -126,7 +137,7 @@ namespace DotDart
     }
   }
 
-  public class SimpleInterfaceType : DartType
+  public class SimpleInterfaceType : DartType, ITypeSyntax
   {
     public byte tag => Tag;
     public const byte Tag = 96; // Note: tag is out of order.
@@ -142,6 +153,15 @@ namespace DotDart
     public SimpleInterfaceType(ClassReference classReference)
     {
       this.classReference = classReference;
+    }
+
+    public TypeSyntax ToTypeSyntax()
+    {
+      if (classReference.canonicalName.value == "String")
+        return SF.PredefinedType(
+          SF.Token(SyntaxKind.StringKeyword));
+
+      throw new NotImplementedException();
     }
   }
 

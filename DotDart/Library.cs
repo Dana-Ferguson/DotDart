@@ -2,6 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+
+using SF = Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
+
 namespace DotDart
 {
   /*
@@ -114,6 +120,44 @@ namespace DotDart
         var end = procedureOffsets[i + 1];
         procedures.Add(new Procedure(reader.GetWindow(start, end - start)));
       }
+    }
+
+    // We might want to combine all the libraries together into a single CompilationUnit, we could combine all the usings
+    public object ToLibrary()
+    {
+      if (name.index != 0)
+      {
+        Console.WriteLine($"Warning, Library has a Name => {name.value};");
+      }
+
+      var safeLibraryName = SafeLibraryName();
+      var library = SF.ClassDeclaration(safeLibraryName)
+        .WithModifiers(SF.TokenList(SF.Token(SyntaxKind.StaticKeyword)));
+
+      // todo: annotations
+      // todo: libraryDependencies ~ static usings?
+      // todo: additionalExports ~ I'm unsure how to handle this ~ I may not need to
+      // todo: libraryParts ~ hmm.... will this happen?
+      // todo: typedefs
+      // todo: classes <-- sub-classes to my static classing
+
+      // fields
+      library.WithMembers(SF.List<MemberDeclarationSyntax>(fields.Select(field => field.ToFieldDeclaration())));
+
+      // procedures
+      // library.WithMembers(SF.List<MemberDeclarationSyntax>(procedures.Select(procedure => procedure.ToMethodDeclaration())));
+
+      return library;
+    }
+
+    public string SafeLibraryName()
+    {
+      // We need to make sure that this is safe
+      // 'file:///home/dana/RiderProjects/DartAstTest/DotDart/test_scripts/hello.dart'
+
+      // todo: optimize -- we can probably just do an isLetter test?
+      var safeLibraryName = canonicalName.value.Replace(':', '_').Replace('/', '_');
+      return safeLibraryName;
     }
   }
 

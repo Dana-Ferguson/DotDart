@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Reflection.Metadata;
 using Xunit;
@@ -73,6 +74,15 @@ namespace Tests
         }
 
         [Fact]
+        public void DartToCSharp()
+        {
+            var hello = Load("hello");
+            var result = hello.libraries.First().ToLibrary();
+
+            _test.WriteLine(result.ToString());
+        }
+
+        [Fact]
         public void EquivalentRoslynProgram()
         {
             var compilationUnit = CompilationUnit()
@@ -92,6 +102,9 @@ namespace Tests
                 .WithMembers(
                     SingletonList<MemberDeclarationSyntax>(
                         ClassDeclaration("Program")
+                            .WithModifiers(
+                                TokenList(
+                                    Token(SyntaxKind.StaticKeyword)))
                             .WithMembers(
                                 List<MemberDeclarationSyntax>(
                                     new MemberDeclarationSyntax[]
@@ -202,9 +215,17 @@ namespace Tests
 
             Type fooType = assembly.GetType("Program");
             MethodInfo printMethod = fooType.GetMethod("Main");
-            object foo = assembly.CreateInstance("Program");
-            var result = printMethod.Invoke(foo, BindingFlags.InvokeMethod, null, null, CultureInfo.CurrentCulture);
-            // _test.WriteLine(result.ToString());
+            if (printMethod.IsStatic)
+            {
+                var result = printMethod.Invoke(null, BindingFlags.InvokeMethod, null, null, CultureInfo.CurrentCulture);
+                // _test.WriteLine(result.ToString());
+            }
+            else
+            {
+                object foo = assembly.CreateInstance("Program");
+                var result = printMethod.Invoke(foo, BindingFlags.InvokeMethod, null, null, CultureInfo.CurrentCulture);
+                // _test.WriteLine(result.ToString());
+            }
         }
     }
 }

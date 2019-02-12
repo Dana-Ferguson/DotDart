@@ -1,8 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Text;
 
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+
+using SF = Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 // ReSharper disable ClassNeverInstantiated.Global
 // ReSharper disable InconsistentNaming
@@ -11,6 +17,16 @@ using System.Text;
 
 namespace DotDart
 {
+  using static TestDartLibrary;
+  public static class TestDartLibrary
+  {
+    public static string dart = "dart-lang";
+
+    public class TestClass
+    {
+      //
+    }
+  }
   public class Program
   {
     static void Main(string[] args)
@@ -19,6 +35,8 @@ namespace DotDart
 
       // CompileDill();
       Test01();
+
+      var tc = new TestClass();
     }
 
     static void Test01()
@@ -255,6 +273,18 @@ type UriSource {
     public readonly byte tag;
 
     public T GetValue() => this is Something<T> something ? something.value : default;
+
+    public bool TryGetValue(out T variable)
+    {
+      if (this is Something<T> something)
+      {
+        variable = something.value;
+        return true;
+      }
+
+      variable = default;
+      return false;
+    }
   }
 
   // was Nothing : Option<T>, but that doesn't work in C#
@@ -504,6 +534,41 @@ enum AsyncMarker {
       {
         throw new Exception($"{nameof(Arguments)}.{nameof(numArguments)}:{numArguments} != {nameof(positional)}.Count:{positional.Count} + {nameof(named)}.Count:{named.Count}");
       }
+    }
+
+    public ArgumentListSyntax ToArgumentListSyntax()
+    {
+      if (named.Count != 0) throw new Exception("named expressions not yet implemented");
+      var args = new List<SyntaxNodeOrToken>();
+
+      bool first = true;
+      foreach (var expression in positional)
+      {
+        args.Add(SF.Argument(expression.ToExpressionSyntax()));
+
+        if (first)
+        {
+          first = false;
+        }
+        else
+        {
+          // todo: do we need this? (_it seems weird_)
+          args.Add(SF.Token(SyntaxKind.CommaToken));
+        }
+      }
+
+      if (args.Count == 0)
+      {
+        throw new Exception("No argument list without an argument.");
+      }
+
+      if (args.Count == 1)
+      {
+        // todo: micro-optimize
+        return SF.ArgumentList(SF.SingletonSeparatedList((ArgumentSyntax)args.First()));
+      }
+
+      return SF.ArgumentList(SF.SeparatedList<ArgumentSyntax>(args.ToArray()));
     }
   }
 

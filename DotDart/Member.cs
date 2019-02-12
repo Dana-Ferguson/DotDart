@@ -1,5 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+
+using SF = Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace DotDart
 {
@@ -77,6 +83,39 @@ namespace DotDart
       this.annotations = annotations;
       this.type = type;
       this.initializer = initializer;
+    }
+
+    public FieldDeclarationSyntax ToFieldDeclaration()
+    {
+      if (canonicalName.value != name.name.value)
+      {
+        Console.WriteLine($"Warning!!! '{canonicalName.value}' != '{name.name.value}';");
+      }
+
+      if (annotations.Count != 0) Console.WriteLine($"Warning!!! Annotations!;");
+
+      var declaratorSyntax = SF.VariableDeclarator(SF.Identifier(name.name.value));
+      if (initializer.TryGetValue(out var initializerExpression))
+      {
+        declaratorSyntax.WithInitializer(
+          // todo: I think this might not work ... a lot!
+          SF.EqualsValueClause(initializerExpression.ToLiteralExpressionSyntax()));
+      }
+
+      var fieldDeclaration = SF.FieldDeclaration(
+        SF.VariableDeclaration(type.ToTypeSyntax())
+          .WithVariables(SF.SingletonSeparatedList<VariableDeclaratorSyntax>(declaratorSyntax)));
+
+      if (flags.HasFlag(Flag.isConst)) fieldDeclaration.WithModifiers(SF.TokenList(SF.Token(SyntaxKind.ConstKeyword)));
+      if (flags.HasFlag(Flag.isFinal)) fieldDeclaration.WithModifiers(SF.TokenList(SF.Token(SyntaxKind.ReadOnlyKeyword)));
+      if (flags.HasFlag(Flag.isStatic)) fieldDeclaration.WithModifiers(SF.TokenList(SF.Token(SyntaxKind.StaticKeyword)));
+
+      if (flags.HasFlag(Flag.isCovariant)) throw new NotImplementedException();
+      if (flags.HasFlag(Flag.isGenericCovariantImpl)) throw new NotImplementedException();
+      if (flags.HasFlag(Flag.hasImplicitSetter)) throw new NotImplementedException();
+      if (flags.HasFlag(Flag.hasImplicitGetter)) throw new NotImplementedException();
+
+      return fieldDeclaration;
     }
   }
 
@@ -268,6 +307,41 @@ enum ProcedureKind {
       this.forwardingStubSuperTarget = forwardingStubSuperTarget;
       this.forwardingStubInterfaceTarget = forwardingStubInterfaceTarget;
       this.function = function;
+    }
+
+    public MethodDeclarationSyntax ToMethodDeclaration()
+    {
+      TypeSyntax returnType = SF.PredefinedType(
+        SF.Token(SyntaxKind.VoidKeyword));
+
+      if (function.TryGetValue(out var functionNode))
+      {
+        returnType = functionNode.returnType.ToTypeSyntax();
+      }
+
+      var procedureName = canonicalName.value;
+      if (procedureName == "main") procedureName = "Main";
+      if (procedureName != name.name.value || name.library != null) Console.WriteLine($"Take a look at this! {name.library?.canonicalName?.value}.{name.name.value}");
+      var method = SF.MethodDeclaration(returnType, SF.Identifier(procedureName));
+
+      if (flags.HasFlag(Flag.isConst)) method.WithModifiers(SF.TokenList(SF.Token(SyntaxKind.ConstKeyword)));
+      if (flags.HasFlag(Flag.isStatic)) method.WithModifiers(SF.TokenList(SF.Token(SyntaxKind.StaticKeyword)));
+
+      if (flags.HasFlag(Flag.isAbstract)) throw new NotImplementedException();
+      if (flags.HasFlag(Flag.isExternal)) throw new NotImplementedException();
+      if (flags.HasFlag(Flag.isForwardingStub)) throw new NotImplementedException();
+      if (flags.HasFlag(Flag.isForwardingSemiStub)) throw new NotImplementedException();
+      if (flags.HasFlag(Flag.isRedirectingFactoryConstructor)) throw new NotImplementedException();
+      if (flags.HasFlag(Flag.isNoSuchMethodForwarder)) throw new NotImplementedException();
+
+      // todo: in our test cases this is a dart Block which goes to BlockSyntax ~ is this always the case?
+      // --> I'm guessing it's not for arrow functions???
+      if (functionNode.body.TryGetValue(out var body))
+      {
+        method.WithBody(body.ToStatementSyntax() as BlockSyntax);
+      }
+
+      return method;
     }
   }
 

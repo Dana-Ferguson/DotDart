@@ -1,5 +1,5 @@
 var dart = 'dart-lang';
 main() {
-  print('hello from ${dart}!');
+  print('hello from $dart!');
 }
 
