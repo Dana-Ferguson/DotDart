@@ -142,11 +142,12 @@ namespace DotDart
       // todo: classes <-- sub-classes to my static classing
 
       // fields
-      library.WithMembers(SF.List<MemberDeclarationSyntax>(fields.Select(field => field.ToFieldDeclaration())));
+      library = library.WithMembers(SF.List<MemberDeclarationSyntax>(fields.Select(field => field.ToFieldDeclaration())));
 
       // procedures
       // library.WithMembers(SF.List<MemberDeclarationSyntax>(procedures.Select(procedure => procedure.ToMethodDeclaration())));
 
+      // I assume we can remove this during production for increased efficiency?
       return library.NormalizeWhitespace();
     }
 

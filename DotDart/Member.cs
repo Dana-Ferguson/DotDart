@@ -97,7 +97,7 @@ namespace DotDart
       var declaratorSyntax = SF.VariableDeclarator(SF.Identifier(name.name.value));
       if (initializer.TryGetValue(out var initializerExpression))
       {
-        declaratorSyntax.WithInitializer(
+        declaratorSyntax = declaratorSyntax.WithInitializer(
           // todo: I think this might not work ... a lot!
           SF.EqualsValueClause(initializerExpression.ToLiteralExpressionSyntax()));
       }
@@ -106,9 +106,9 @@ namespace DotDart
         SF.VariableDeclaration(type.ToTypeSyntax())
           .WithVariables(SF.SingletonSeparatedList<VariableDeclaratorSyntax>(declaratorSyntax)));
 
-      if (flags.HasFlag(Flag.isConst)) fieldDeclaration.WithModifiers(SF.TokenList(SF.Token(SyntaxKind.ConstKeyword)));
-      if (flags.HasFlag(Flag.isFinal)) fieldDeclaration.WithModifiers(SF.TokenList(SF.Token(SyntaxKind.ReadOnlyKeyword)));
-      if (flags.HasFlag(Flag.isStatic)) fieldDeclaration.WithModifiers(SF.TokenList(SF.Token(SyntaxKind.StaticKeyword)));
+      if (flags.HasFlag(Flag.isConst)) fieldDeclaration = fieldDeclaration.WithModifiers(SF.TokenList(SF.Token(SyntaxKind.ConstKeyword)));
+      if (flags.HasFlag(Flag.isFinal)) fieldDeclaration = fieldDeclaration.WithModifiers(SF.TokenList(SF.Token(SyntaxKind.ReadOnlyKeyword)));
+      if (flags.HasFlag(Flag.isStatic)) fieldDeclaration = fieldDeclaration.WithModifiers(SF.TokenList(SF.Token(SyntaxKind.StaticKeyword)));
 
       if (flags.HasFlag(Flag.isCovariant)) throw new NotImplementedException();
       if (flags.HasFlag(Flag.isGenericCovariantImpl)) throw new NotImplementedException();
@@ -324,8 +324,8 @@ enum ProcedureKind {
       if (procedureName != name.name.value || name.library != null) Console.WriteLine($"Take a look at this! {name.library?.canonicalName?.value}.{name.name.value}");
       var method = SF.MethodDeclaration(returnType, SF.Identifier(procedureName));
 
-      if (flags.HasFlag(Flag.isConst)) method.WithModifiers(SF.TokenList(SF.Token(SyntaxKind.ConstKeyword)));
-      if (flags.HasFlag(Flag.isStatic)) method.WithModifiers(SF.TokenList(SF.Token(SyntaxKind.StaticKeyword)));
+      if (flags.HasFlag(Flag.isConst)) method = method.WithModifiers(SF.TokenList(SF.Token(SyntaxKind.ConstKeyword)));
+      if (flags.HasFlag(Flag.isStatic)) method = method.WithModifiers(SF.TokenList(SF.Token(SyntaxKind.StaticKeyword)));
 
       if (flags.HasFlag(Flag.isAbstract)) throw new NotImplementedException();
       if (flags.HasFlag(Flag.isExternal)) throw new NotImplementedException();
@@ -338,7 +338,7 @@ enum ProcedureKind {
       // --> I'm guessing it's not for arrow functions???
       if (functionNode.body.TryGetValue(out var body))
       {
-        method.WithBody(body.ToStatementSyntax() as BlockSyntax);
+        method = method.WithBody(body.ToStatementSyntax() as BlockSyntax);
       }
 
       return method;
