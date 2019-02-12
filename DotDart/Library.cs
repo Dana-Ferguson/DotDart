@@ -147,7 +147,7 @@ namespace DotDart
       // procedures
       // library.WithMembers(SF.List<MemberDeclarationSyntax>(procedures.Select(procedure => procedure.ToMethodDeclaration())));
 
-      return library;
+      return library.NormalizeWhitespace();
     }
 
     public string SafeLibraryName()
