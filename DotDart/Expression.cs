@@ -832,13 +832,16 @@ namespace DotDart
 
     public ExpressionSyntax ToExpressionSyntax()
     {
-      // SeparatedSyntaxList<ArgumentSyntax>
+      var expression = SF.InvocationExpression(
+        SF.IdentifierName(target.canonicalName.value));
 
+      /* -- If we need a library prefix!
       var expression = SF.InvocationExpression(
         SF.MemberAccessExpression(
           SyntaxKind.SimpleMemberAccessExpression,
           SF.IdentifierName("DartCore"),
           SF.IdentifierName(target.canonicalName.value)));
+      */
 
       if (arguments.numArguments != 0)
       {

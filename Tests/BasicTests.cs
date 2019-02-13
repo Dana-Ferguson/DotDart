@@ -80,6 +80,63 @@ namespace Tests
             var result = hello.libraries.First().ToLibrary();
 
             _test.WriteLine(result.ToString());
+
+            var compilationUnit = CompilationUnit()
+                .WithUsings(
+                    List<UsingDirectiveSyntax>(
+                        new UsingDirectiveSyntax[]
+                        {
+                            UsingDirective(
+                                IdentifierName("System")),
+                            UsingDirective(
+                                    QualifiedName(
+                                        IdentifierName("DotDart"),
+                                        IdentifierName("DartCore")))
+                                .WithStaticKeyword(
+                                    Token(SyntaxKind.StaticKeyword))
+                        }))
+                .WithMembers(
+                    SingletonList<MemberDeclarationSyntax>(result as MemberDeclarationSyntax))
+                .NormalizeWhitespace();
+
+            _test.WriteLine(compilationUnit.ToString());
+
+            // https://github.com/dotnet/orleans/blob/master/src/Orleans.CodeGeneration/RoslynCodeGenerator.cs#L549
+
+            // var model = CSharpCompilation.Create()
+
+            // creation of the syntax tree for every file
+            SyntaxTree programTree = compilationUnit.SyntaxTree;
+            SyntaxTree[] sourceTrees = { programTree };
+
+            // gathering the assemblies
+            MetadataReference mscorlib = MetadataReference.CreateFromFile(typeof(object).GetTypeInfo().Assembly.Location);
+            MetadataReference codeAnalysis = MetadataReference.CreateFromFile(typeof(SyntaxTree).GetTypeInfo().Assembly.Location);
+            MetadataReference csharpCodeAnalysis = MetadataReference.CreateFromFile(typeof(CSharpSyntaxTree).GetTypeInfo().Assembly.Location);
+
+            // todo: is there a better way to do this?
+            MetadataReference dartCore = MetadataReference.CreateFromFile(typeof(DartCore).GetTypeInfo().Assembly.Location);
+
+            // These are for dynamic keyword support.
+            var dynamicObjectLib = MetadataReference.CreateFromFile(Assembly.GetAssembly(typeof(System.Dynamic.DynamicObject)).Location);  // System.Code
+            var csharpLib = MetadataReference.CreateFromFile(Assembly.GetAssembly(typeof(Microsoft.CSharp.RuntimeBinder.CSharpArgumentInfo)).Location);  // Microsoft.CSharp
+            var expandoLib = MetadataReference.CreateFromFile(Assembly.GetAssembly(typeof(System.Dynamic.ExpandoObject)).Location); // System.Dynamic
+
+            MetadataReference[] references = { mscorlib, dartCore, dynamicObjectLib, csharpLib, expandoLib /*codeAnalysis, csharpCodeAnalysis*/ };
+
+            // compilation
+            var app = CSharpCompilation.Create("ConsoleApplication",
+                sourceTrees,
+                references,
+                new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+                // new CSharpCompilationOptions(OutputKind.ConsoleApplication));
+
+            //
+            var stream = new MemoryStream();
+            var emitResult = app.Emit(stream);
+            _test.WriteLine($"{emitResult.Success} :: {string.Join(", ", emitResult.Diagnostics)}");
+            var assembly = Assembly.Load(stream.GetBuffer());
+            ExecuteFromAssembly(assembly);
         }
 
         [Fact]
@@ -213,17 +270,27 @@ namespace Tests
         {
             DartCore.printToZone = obj => _test.WriteLine($"core.print => {obj}");
 
-            Type fooType = assembly.GetType("Program");
-            MethodInfo printMethod = fooType.GetMethod("Main");
-            if (printMethod.IsStatic)
+            foreach (var type in assembly.GetTypes())
             {
-                var result = printMethod.Invoke(null, BindingFlags.InvokeMethod, null, null, CultureInfo.CurrentCulture);
+                _test.WriteLine(type.FullName);
+                foreach (var method in type.GetMethods(BindingFlags.NonPublic & BindingFlags.Static))
+                {
+                    _test.WriteLine($"   {method.Name}");
+                }
+            }
+
+            Type fooType = assembly.GetType("file____home_dana_RiderProjects_DartAstTest_Tests_scripts_hello_dart"); // "Program");
+            MethodInfo entryPoint = fooType.GetMethod("Main");
+            // MethodInfo entryPoint = assembly.EntryPoint;
+            if (entryPoint.IsStatic)
+            {
+                var result = entryPoint.Invoke(null, BindingFlags.InvokeMethod, null, null, CultureInfo.CurrentCulture);
                 // _test.WriteLine(result.ToString());
             }
             else
             {
                 object foo = assembly.CreateInstance("Program");
-                var result = printMethod.Invoke(foo, BindingFlags.InvokeMethod, null, null, CultureInfo.CurrentCulture);
+                var result = entryPoint.Invoke(foo, BindingFlags.InvokeMethod, null, null, CultureInfo.CurrentCulture);
                 // _test.WriteLine(result.ToString());
             }
         }

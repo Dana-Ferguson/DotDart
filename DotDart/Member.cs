@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -311,21 +312,40 @@ enum ProcedureKind {
 
     public MethodDeclarationSyntax ToMethodDeclaration()
     {
+      bool isMain = false;
+      TypeSyntax mainReturnSyntax = null;
+
       TypeSyntax returnType = SF.PredefinedType(
         SF.Token(SyntaxKind.VoidKeyword));
 
+      var procedureName = canonicalName.value;
+      if (procedureName == "main")
+      {
+        // Main entry points may only take the return type of int or void
+        isMain = true;
+        procedureName = "Main";
+      }
+      if (procedureName != name.name.value || name.library != null) Console.WriteLine($"Take a look at this! {name.library?.canonicalName?.value}.{name.name.value}");
+
       if (function.TryGetValue(out var functionNode))
       {
-        returnType = functionNode.returnType.ToTypeSyntax();
+        if (!isMain)
+        {
+          returnType = functionNode.returnType.ToTypeSyntax();
+        }
+        else
+        {
+          mainReturnSyntax = functionNode.returnType.ToTypeSyntax();
+        }
       }
 
-      var procedureName = canonicalName.value;
-      if (procedureName == "main") procedureName = "Main";
-      if (procedureName != name.name.value || name.library != null) Console.WriteLine($"Take a look at this! {name.library?.canonicalName?.value}.{name.name.value}");
       var method = SF.MethodDeclaration(returnType, SF.Identifier(procedureName));
 
-      if (flags.HasFlag(Flag.isConst)) method = method.WithModifiers(SF.TokenList(SF.Token(SyntaxKind.ConstKeyword)));
-      if (flags.HasFlag(Flag.isStatic)) method = method.WithModifiers(SF.TokenList(SF.Token(SyntaxKind.StaticKeyword)));
+      var modifiers = new List<SyntaxToken>();
+
+      if (flags.HasFlag(Flag.isConst)) modifiers.Add(SF.Token(SyntaxKind.ConstKeyword));
+      if (flags.HasFlag(Flag.isStatic)) modifiers.Add(SF.Token(SyntaxKind.StaticKeyword));
+      if (isMain) modifiers.Add(SF.Token(SyntaxKind.PublicKeyword));
 
       if (flags.HasFlag(Flag.isAbstract)) throw new NotImplementedException();
       if (flags.HasFlag(Flag.isExternal)) throw new NotImplementedException();
@@ -334,11 +354,22 @@ enum ProcedureKind {
       if (flags.HasFlag(Flag.isRedirectingFactoryConstructor)) throw new NotImplementedException();
       if (flags.HasFlag(Flag.isNoSuchMethodForwarder)) throw new NotImplementedException();
 
+      if (modifiers.Count == 1)
+      {
+        method = method.WithModifiers(SF.TokenList(modifiers.First()));
+      }
+      else if (modifiers.Count != 0)
+      {
+        method = method.WithModifiers(SF.TokenList(modifiers.ToArray()));
+      }
+
       // todo: in our test cases this is a dart Block which goes to BlockSyntax ~ is this always the case?
       // --> I'm guessing it's not for arrow functions???
       if (functionNode.body.TryGetValue(out var body))
       {
-        method = method.WithBody(body.ToStatementSyntax() as BlockSyntax);
+        // if 'isMain' we need to rewrite all return blocks
+        var blockSyntax = body.ToStatementSyntax() as BlockSyntax;
+        method = method.WithBody(blockSyntax);
       }
 
       return method;

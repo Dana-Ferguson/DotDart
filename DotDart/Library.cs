@@ -158,7 +158,10 @@ namespace DotDart
       // 'file:///home/dana/RiderProjects/DartAstTest/DotDart/test_scripts/hello.dart'
 
       // todo: optimize -- we can probably just do an isLetter test?
-      var safeLibraryName = canonicalName.value.Replace(':', '_').Replace('/', '_');
+      var safeLibraryName = canonicalName.value
+        .Replace(':', '_')
+        .Replace('/', '_')
+        .Replace('.', '_');
       return safeLibraryName;
     }
   }
