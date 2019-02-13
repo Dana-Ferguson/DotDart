@@ -7,36 +7,65 @@ using SF = Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace DotDart
 {
+    public class DartTransformationException : Exception
+    {
+        public readonly Type Target;
+        public readonly object Transformable;
+
+        public override string ToString()
+        {
+            try
+            {
+                var b = new DartStringBuilder();
+                b.AppendLine($"DartType = {Transformable?.GetType().ToString() ?? "NULL"};").AppendLine($"TargetType = {Target?.Name};");
+                b.Serialize(Transformable);
+                return b.ToString();
+            }
+            catch (Exception exception)
+            {
+                return $"Exception Serialization Failed: {exception}";
+            }
+        }
+
+        public override string Message => ToString();
+
+        public DartTransformationException(object transformable, Type target)
+        {
+            Target = target;
+            Transformable = transformable;
+        }
+    }
+
     public static class TransformableExtensions
     {
         // todo: don't base on the `object`
         public static ExpressionSyntax ToExpressionSyntax(this object transformable)
         {
-            var est = transformable as IExpressionSyntax ?? throw new Exception($"Could not transform {transformable.GetType()}:{transformable} to {typeof(IExpressionSyntax)}.");
+            var est = transformable as IExpressionSyntax ?? throw new DartTransformationException(transformable, typeof(IExpressionSyntax));
             return est.ToExpressionSyntax();
         }
 
         public static SyntaxToken ToSyntaxToken(this object transformable)
         {
-            var x = transformable as ISyntaxToken ?? throw new Exception($"Could not transform {transformable.GetType()}:{transformable} to {typeof(ISyntaxToken)}.");
+            var x = transformable as ISyntaxToken ?? throw new DartTransformationException(transformable, typeof(ISyntaxToken));
             return x.ToSyntaxToken();
         }
 
         public static StatementSyntax ToStatementSyntax(this object transformable)
         {
-            var x = transformable as IStatementSyntax ?? throw new Exception($"Could not transform {transformable.GetType()}:{transformable} to {typeof(IStatementSyntax)}.");
+            var x = transformable as IStatementSyntax ?? throw new DartTransformationException(transformable, typeof(IStatementSyntax));
             return x.ToStatementSyntax();
         }
 
         public static TypeSyntax ToTypeSyntax(this object transformable)
         {
-            var x = transformable as ITypeSyntax ?? throw new Exception($"Could not transform {transformable.GetType()}:{transformable} to {typeof(ITypeSyntax)}.");
+            var x = transformable as ITypeSyntax ?? throw new DartTransformationException(transformable, typeof(ITypeSyntax));
             return x.ToTypeSyntax();
         }
 
         public static LiteralExpressionSyntax ToLiteralExpressionSyntax(this object transformable)
         {
-            var x = transformable as ILiteralExpressionSyntax ?? throw new Exception($"Could not transform {transformable.GetType()}:{transformable} to {typeof(ITypeSyntax)}.");
+            var x = transformable as ILiteralExpressionSyntax ?? throw new DartTransformationException(transformable, typeof(ILiteralExpressionSyntax));
             return x.ToLiteralExpressionSyntax();
         }
     }

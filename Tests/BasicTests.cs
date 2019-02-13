@@ -70,7 +70,7 @@ namespace Tests
                 new StringLiteral("hello, "),
                 new StaticGet("dart"),
                 new StringLiteral("!"), });
-            sc.Compile().ToString().ShouldBe("$\"hello, {dart}!\"");
+            sc.ToExpressionSyntax().ToString().ShouldBe("$\"hello, {dart}!\"");
         }
 
         [Fact]

@@ -69,7 +69,7 @@ namespace DotDart
     public StatementSyntax ToStatementSyntax()
     {
       // todo: pretty sure this is wrong
-      return SF.ExpressionStatement(expression.ToLiteralExpressionSyntax());
+      return SF.ExpressionStatement(expression.ToExpressionSyntax());
       // return SF.EqualsValueClause(
       //  expression.ToLiteralExpressionSyntax());
     }

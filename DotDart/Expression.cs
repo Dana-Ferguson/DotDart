@@ -801,7 +801,7 @@ namespace DotDart
     }
   }
 
-  public class StaticInvocation : Expression
+  public class StaticInvocation : Expression, IExpressionSyntax
   {
     public byte tag => Tag;
     public const byte Tag = 30;
@@ -830,18 +830,22 @@ namespace DotDart
       this.arguments = arguments;
     }
 
-    object Compile()
+    public ExpressionSyntax ToExpressionSyntax()
     {
-      throw new NotImplementedException();
       // SeparatedSyntaxList<ArgumentSyntax>
-      dynamic arguments = null; // this.arguments;
 
-      return SF.InvocationExpression(
+      var expression = SF.InvocationExpression(
         SF.MemberAccessExpression(
           SyntaxKind.SimpleMemberAccessExpression,
-          SF.IdentifierName("dart_core"), // todo: I think canonicalName has a library value?
-          SF.IdentifierName(target.canonicalName.value)))
-        .WithArgumentList(SF.ArgumentList(arguments));
+          SF.IdentifierName("DartCore"),
+          SF.IdentifierName(target.canonicalName.value)));
+
+      if (arguments.numArguments != 0)
+      {
+        expression = expression.WithArgumentList(arguments.ToArgumentListSyntax());
+      }
+
+      return expression;
     }
   }
 
@@ -1019,7 +1023,7 @@ namespace DotDart
     }
   }
 
-  public class StringConcatenation : Expression
+  public class StringConcatenation : Expression, IExpressionSyntax
   {
     public byte tag => Tag;
     public const byte Tag = 36;
@@ -1044,7 +1048,7 @@ namespace DotDart
       this.expressions = expressions.ToList();
     }
 
-    public InterpolatedStringExpressionSyntax Compile()
+    public ExpressionSyntax ToExpressionSyntax()
     {
       var terms = new List<InterpolatedStringContentSyntax>();
       foreach (var expression in expressions)
@@ -1073,10 +1077,10 @@ namespace DotDart
       }
 
       return SF.InterpolatedStringExpression(
-              SF.Token(SyntaxKind.InterpolatedStringStartToken))
-            .WithContents(
-              SF.List<InterpolatedStringContentSyntax>(terms)
-            );
+          SF.Token(SyntaxKind.InterpolatedStringStartToken))
+        .WithContents(
+          SF.List<InterpolatedStringContentSyntax>(terms)
+        );
     }
   }
 
