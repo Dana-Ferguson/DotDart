@@ -136,7 +136,7 @@ namespace Tests
             var emitResult = app.Emit(stream);
             _test.WriteLine($"{emitResult.Success} :: {string.Join(", ", emitResult.Diagnostics)}");
             var assembly = Assembly.Load(stream.GetBuffer());
-            ExecuteFromAssembly(assembly);
+            ExecuteFromAssembly2(assembly);
         }
 
         [Fact]
@@ -266,6 +266,18 @@ namespace Tests
             ExecuteFromAssembly(assembly);
         }
 
+        private void ExecuteFromAssembly2(Assembly assembly)
+        {
+            DartCore.printToZone = obj => _test.WriteLine($"core.print => {obj}");
+
+            var main = assembly.GetTypes().Select(t => t.GetMethod("main")).FirstOrDefault()
+                       ?? throw new Exception("No main found.");
+
+            // todo: supply arguments... if required
+            var result = main.Invoke(null, BindingFlags.InvokeMethod, null, null, CultureInfo.CurrentCulture);
+            _test.WriteLine($"Result = {result?.ToString() ?? "NULL"};");
+        }
+
         private void ExecuteFromAssembly(Assembly assembly)
         {
             DartCore.printToZone = obj => _test.WriteLine($"core.print => {obj}");
@@ -273,14 +285,18 @@ namespace Tests
             foreach (var type in assembly.GetTypes())
             {
                 _test.WriteLine(type.FullName);
-                foreach (var method in type.GetMethods(BindingFlags.NonPublic & BindingFlags.Static))
+                foreach (var method in type.GetMethods()) //BindingFlags.Static))
                 {
                     _test.WriteLine($"   {method.Name}");
                 }
             }
 
-            Type fooType = assembly.GetType("file____home_dana_RiderProjects_DartAstTest_Tests_scripts_hello_dart"); // "Program");
-            MethodInfo entryPoint = fooType.GetMethod("Main");
+            // todo: thoughts:
+            // We could inject our own default Main() and have it call dart's main()? -- returns are really gonna be an issue!
+
+            Type fooType = assembly.GetType("file_home_dana_RiderProjects_DartAstTest_Tests_scripts_hello_dart"); // "Program");
+            MethodInfo entryPoint = fooType.GetMethod("main");
+
             // MethodInfo entryPoint = assembly.EntryPoint;
             if (entryPoint.IsStatic)
             {
